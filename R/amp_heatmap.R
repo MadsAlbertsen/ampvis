@@ -24,6 +24,7 @@
 #' @import ggplot2
 #' @import plyr
 #' @import reshape2
+#' @import phyloseq
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
