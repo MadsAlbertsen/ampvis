@@ -1,0 +1,4 @@
+export(amp_heatmap)
+import(ggplot2)
+import(plyr)
+import(reshape2)
