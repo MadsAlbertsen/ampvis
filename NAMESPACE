@@ -1,4 +1,7 @@
 export(amp_heatmap)
+export(amp_point)
 import(ggplot2)
+import(grid)
+import(phyloseq)
 import(plyr)
 import(reshape2)
