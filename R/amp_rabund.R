@@ -1,8 +1,8 @@
-#' Generates a ggplot2 style plot of the most abundant OTUs 
+#' Generates a ggplot2 style rank abundance plot of the most abundant OTUs 
 #'
 #' A nice long description
 #'
-#' @usage amp_point(data)
+#' @usage amp_rabund(data)
 #'
 #' @param data (required) A phyloseq object including sample data.
 #' @param tax.show A number of taxa to show or a vector of taxa names (default: 10).
@@ -21,13 +21,13 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_point <- function(data, tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "point", plot.log = F){
+amp_rabund <- function(data, tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "point", plot.log = F){
   
   ## Extract all data from the phyloseq object
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
-  sample <- as.data.frame(as.matrix(sample_data(data)))
+  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   
   ## Change Proteobacteria to Class level
   

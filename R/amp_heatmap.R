@@ -35,7 +35,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
-  sample <- as.data.frame(as.matrix(sample_data(data)))
+  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   
   ## Extract group information
   if (!is.null(group)){

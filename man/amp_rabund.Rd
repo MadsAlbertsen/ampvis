@@ -1,8 +1,8 @@
-\name{amp_point}
-\alias{amp_point}
-\title{Generates a ggplot2 style plot of the most abundant OTUs}
+\name{amp_rabund}
+\alias{amp_rabund}
+\title{Generates a ggplot2 style rank abundance plot of the most abundant OTUs}
 \usage{
-amp_point(data)
+amp_rabund(data)
 }
 \arguments{
   \item{data}{(required) A phyloseq object including sample

@@ -13,4 +13,7 @@ Depends:
     reshape2,
     plyr,
     phyloseq,
-    grid
+    grid,
+    vegan,
+    knitr, 
+    igraph
