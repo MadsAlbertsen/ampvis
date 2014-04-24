@@ -14,13 +14,13 @@ amp_headtmap(data)
   \item{scale}{A variable from the associated sample data
   to scale the abundance by.}
 
-  \item{normalise}{A variable from the group to normalise
-  the counts to.}
+  \item{normalise}{A sample or group to normalise the
+  counts to.}
 
   \item{tax.aggregate}{The taxonomic level that the data
   should be aggregated to (defualt: Phylum)}
 
-  \item{tax.show}{A number of taxa to show or a vector of
+  \item{tax.show}{The number of taxa to show or a vector of
   taxa names (default: 10).}
 
   \item{tax.clean}{Replace the phylum Proteobacteria with

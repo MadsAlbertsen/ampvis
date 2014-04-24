@@ -4,11 +4,12 @@
 #'
 #' @usage amp_rabund(data)
 #'
-#' @param data (required) A phyloseq object including sample data.
-#' @param tax.show A number of taxa to show or a vector of taxa names (default: 10).
+#' @param data (required) A phyloseq object.
+#' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
 #' @param plot.type Either point or boxplot (default:point).
+#' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
 #' 
@@ -21,13 +22,15 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "point", plot.log = F){
+amp_rabund <- function(data, tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "point", plot.log = F, output = "plot"){
   
   ## Extract all data from the phyloseq object
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
+  
+  outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
   ## Change Proteobacteria to Class level
   
@@ -82,5 +85,9 @@ p <-ggplot(abund4, aes(x = OTU, y = Abundance)) +
    p <- p + scale_y_log10() 
   }
   
-return(p)
+  outlist <- append(outlist, list(dataframe = abund4, plot = p))
+
+  if(output == "complete"){ return(outlist) }
+  if(output == "plot"){ return(p) }
+
 }

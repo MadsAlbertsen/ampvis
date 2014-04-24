@@ -1,21 +1,21 @@
-
 #' Generates correlation networks from amplicon data.
 #'
 #' A nice long description
 #'
-#' @usage amp_rabund(data)
+#' @usage amp_correlation(data)
 #'
 #' @param data (required) A phyloseq object including sample data.
 #' @param trans Transform the raw counts, currently only supports "none" or "sqrt" (default: "none").
 #' @param treshold.cor Absolute correlation treshold (default: 0.8).
-#' @param treshold.count Minimum count in order to use a set of observations for correlation significance test (default: 10)
+#' @param treshold.count Minimum count in order to use a pair of observations for test of correlation (default: 10)
 #' @param treshold.pval P-value treshold for correlations (default: 0.01).
 #' @param treshold.abundance Average abundance treshold (default: 0) 
-#' @param ignore.zero Remove observations with 0 counts from the correlation test (default: T)
+#' @param ignore.zero Remove observations where 1 obeservation has 0 counts from the correlation test (default: F)
 #' @param tax.clean Assign best classification to OTUs (default: T).
 #' @param label Plot taxonomic classifications (e.g. "Genus") instead of points (default: "OTU")
 #' @param scale.abundance Scale the size of nodes by abundance (default: F).
-#' @param scale.seq The number of sequences, used to calculate abundances (default: 20000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
+#' 
 #' @param scale.size Scale the size of the plotted objects (default: 1)
 #' @param output Either plot or complete (default: "plot").
 #' 

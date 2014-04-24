@@ -5,10 +5,9 @@
 amp_rabund(data)
 }
 \arguments{
-  \item{data}{(required) A phyloseq object including sample
-  data.}
+  \item{data}{(required) A phyloseq object.}
 
-  \item{tax.show}{A number of taxa to show or a vector of
+  \item{tax.show}{The number of taxa to show or a vector of
   taxa names (default: 10).}
 
   \item{tax.clean}{Replace the phylum Proteobacteria with
@@ -19,6 +18,8 @@ amp_rabund(data)
 
   \item{plot.type}{Either point or boxplot
   (default:point).}
+
+  \item{output}{Either plot or complete (default: "plot").}
 }
 \value{
 A ggplot2 object

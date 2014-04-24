@@ -17,4 +17,5 @@ Depends:
     vegan,
     knitr,
     igraph,
-    RColorBrewer
+    RColorBrewer,
+    Biostrings

@@ -2,7 +2,7 @@
 \alias{amp_ordinate}
 \title{Generates a ggplot2 style ordinate plot of amplicon data.}
 \usage{
-amp_rabund(data)
+amp_ordinate(data)
 }
 \arguments{
   \item{data}{(required) A phyloseq object including sample
@@ -28,8 +28,7 @@ amp_rabund(data)
   \item{plot.point.size}{Size of the plotted points
   (default: 3)}
 
-  \item{plot.species}{Plot loadings as points (default:
-  False)}
+  \item{plot.species}{Plot loadings as points (default: F)}
 
   \item{plot.nspecies}{Plot the n most extreme species with
   their genus classification (default: 0).}

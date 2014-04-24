@@ -2,7 +2,7 @@
 #'
 #' A nice long description
 #'
-#' @usage amp_rabund(data)
+#' @usage amp_ordinate(data)
 #'
 #' @param data (required) A phyloseq object including sample data.
 #' @param trans Transform the raw counts, currently only supports "none" or "sqrt" (default: "sqrt").
@@ -12,7 +12,7 @@
 #' @param plot.y Variable to plot on the y-axis (default: "PC2")
 #' @param plot.color Color the points by a sample variable.
 #' @param plot.point.size Size of the plotted points (default: 3)
-#' @param plot.species Plot loadings as points (default: False)
+#' @param plot.species Plot loadings as points (default: F)
 #' @param plot.nspecies Plot the n most extreme species with their genus classification (default: 0).
 #' @param envfit.factor A vector of factor variables from the sample data used for envfit to the model.
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.

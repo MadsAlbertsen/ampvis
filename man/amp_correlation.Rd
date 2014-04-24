@@ -2,7 +2,7 @@
 \alias{amp_correlation}
 \title{Generates correlation networks from amplicon data.}
 \usage{
-amp_rabund(data)
+amp_correlation(data)
 }
 \arguments{
   \item{data}{(required) A phyloseq object including sample
@@ -14,9 +14,9 @@ amp_rabund(data)
   \item{treshold.cor}{Absolute correlation treshold
   (default: 0.8).}
 
-  \item{treshold.count}{Minimum count in order to use a set
-  of observations for correlation significance test
-  (default: 10)}
+  \item{treshold.count}{Minimum count in order to use a
+  pair of observations for test of correlation (default:
+  10)}
 
   \item{treshold.pval}{P-value treshold for correlations
   (default: 0.01).}
@@ -24,8 +24,9 @@ amp_rabund(data)
   \item{treshold.abundance}{Average abundance treshold
   (default: 0)}
 
-  \item{ignore.zero}{Remove observations with 0 counts from
-  the correlation test (default: T)}
+  \item{ignore.zero}{Remove observations where 1
+  obeservation has 0 counts from the correlation test
+  (default: F)}
 
   \item{tax.clean}{Assign best classification to OTUs
   (default: T).}
@@ -36,8 +37,8 @@ amp_rabund(data)
   \item{scale.abundance}{Scale the size of nodes by
   abundance (default: F).}
 
-  \item{scale.seq}{The number of sequences, used to
-  calculate abundances (default: 20000)}
+  \item{scale.seq}{The number of sequences in the
+  pre-filtered samples (default: 20000)}
 
   \item{scale.size}{Scale the size of the plotted objects
   (default: 1)}

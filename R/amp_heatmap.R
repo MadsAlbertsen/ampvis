@@ -7,9 +7,9 @@
 #' @param data (required) A phyloseq object including sample data.
 #' @param group A variable from the associated sample data to group samples by.
 #' @param scale A variable from the associated sample data to scale the abundance by.
-#' @param normalise A variable from the group to normalise the counts to.
+#' @param normalise A sample or group to normalise the counts to.
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: Phylum)
-#' @param tax.show A number of taxa to show or a vector of taxa names (default: 10).
+#' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
