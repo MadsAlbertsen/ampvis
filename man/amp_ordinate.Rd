@@ -42,6 +42,9 @@ amp_ordinate(data)
   \item{envfit.significant}{The significance treshold for
   displaying envfit parameters (default: 0.01).}
 
+  \item{envfit.resize}{Scale the size of the numeric arrows
+  (default: 1).}
+
   \item{tax.clean}{Add best assignment to Genus level
   classification if none exists.}
 

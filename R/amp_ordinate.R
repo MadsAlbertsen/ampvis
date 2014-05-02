@@ -17,6 +17,7 @@
 #' @param envfit.factor A vector of factor variables from the sample data used for envfit to the model.
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
+#' @param envfit.resize Scale the size of the numeric arrows (default: 1).
 #' @param tax.clean Add best assignment to Genus level classification if none exists.
 #' @param output Either plot or complete (default: "plot").
 #' 
@@ -32,13 +33,13 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, tax.clean =T, output = "plot"){
+amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot"){
   
   ## Load the data
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
-  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
+  sample <- suppressWarnings(as.data.frame(sample_data(data)))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
@@ -129,11 +130,7 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
   }
     
     ## Fit environmental data
-    if(!is.null(envfit.factor)){
-      for (i in 1:length(envfit.factor)){
-        sample[,envfit.factor[i]] <- as.factor(as.character(sample[,envfit.factor[i]]))
-      }
-            
+    if(!is.null(envfit.factor)){    
       ef.f <- envfit(model, sample[, envfit.factor], permutations = 999, choices=c(plot.x, plot.y))  
       temp <- cbind.data.frame(rownames(ef.f$factors$centroids),ef.f$factors$var.id, ef.f$factors$centroids)
       colnames(temp)[1:2] <- c("Name","Variable")
@@ -145,9 +142,6 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     }
     
     if (!is.null(envfit.numeric)){
-      for (i in 1:length(envfit.numeric)){
-        sample[,envfit.numeric[i]] <- as.numeric(as.character(sample[,envfit.numeric[i]]))
-      }
       ef.n <- envfit(model, sample[, envfit.numeric], permutations = 999, choices=c(plot.x, plot.y))  
       temp <- cbind.data.frame(rownames(ef.n$vectors$arrows), ef.n$vectors$arrows*sqrt(ef.n$vectors$r), ef.n$vectors$pvals)
       colnames(temp)[c(1,4)] <- c("Name","pval")      
@@ -190,7 +184,9 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     
     if(!is.null(envfit.numeric)){
       if (nrow(n.sig) != 0){
-      p <- p + geom_segment(data=n.sig, aes_string(x = 0, xend = plot.x, y = 0, yend = plot.y),arrow = arrow(length = unit(0.3, "cm")), colour = "darkgrey") +
+      n.sig[, plot.x] <- n.sig[, plot.x]*envfit.resize
+      n.sig[, plot.y] <- n.sig[, plot.y]*envfit.resize
+      p <- p + geom_segment(data=n.sig, aes_string(x = 0, xend = plot.x, y = 0, yend = plot.y),arrow = arrow(length = unit(0.3, "cm")), colour = "darkred", size = 1) +
         geom_text(data=n.sig, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = "darkred")
       }
     }  
