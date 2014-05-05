@@ -11,6 +11,7 @@
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: Phylum)
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
+#' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
 #' @param plot.numbers Plot the values on the heatmap (default: T)
@@ -29,7 +30,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
+amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
   
   ## Extract all data from the phyloseq object
   
@@ -66,6 +67,25 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
     }
     tax$Phylum <- gsub("p__", "", tax$Phylum)
     tax$Phylum <- gsub("c__", "", tax$Phylum)
+    tax$Class <- gsub("c__", "", tax$Class)
+    tax$Order <- gsub("o__", "", tax$Order)
+    tax$Family <- gsub("f__", "", tax$Family)
+    tax$Genus <- gsub("g__", "", tax$Genus)
+    tax[is.na(tax)] <- ""
+    if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
+    
+    if(tax.empty == "rename"){
+      for (i in 1:nrow(tax)){
+        if (tax[i,tax.aggregate] == ""){
+          tax[i,tax.aggregate] <- rownames(tax)[i]
+        }
+      }    
+    }
+    
+    if(tax.empty == "remove"){
+      tax <- subset(tax, tax[,tax.aggregate] != "")
+      abund <- subset(abund, rownames(abund) %in% rownames(tax))
+    }
   }
   
   ## Merge the taxonomic and abundance information

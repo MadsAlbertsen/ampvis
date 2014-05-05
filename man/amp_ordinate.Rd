@@ -8,30 +8,38 @@ amp_ordinate(data)
   \item{data}{(required) A phyloseq object including sample
   data.}
 
-  \item{trans}{Transform the raw counts, currently only
-  supports "none" or "sqrt" (default: "sqrt").}
+  \item{trans}{Transform the raw counts, currently supports
+  "none" or "sqrt" (default: "sqrt").}
 
   \item{ordinate.type}{Either PCA or NMDS (default:
   "PCA").}
 
   \item{ncomp}{The number of principal components to
-  extract (default: 5)}
+  extract if using PCA (default: 5)}
 
-  \item{plot.x}{Variable to plot on the x-axis (default:
-  "PC1")}
+  \item{plot.x}{Variable to plot on the x-axis if using PCA
+  (default: "PC1")}
 
-  \item{plot.y}{Variable to plot on the y-axis (default:
-  "PC2")}
+  \item{plot.y}{Variable to plot on the y-axis if using PCA
+  (default: "PC2")}
 
   \item{plot.color}{Color the points by a sample variable.}
 
-  \item{plot.point.size}{Size of the plotted points
+  \item{plot.point.size}{Size of the plotted sample points
   (default: 3)}
 
   \item{plot.species}{Plot loadings as points (default: F)}
 
   \item{plot.nspecies}{Plot the n most extreme species with
   their genus classification (default: 0).}
+
+  \item{plot.label}{Label points using a sample variable.}
+
+  \item{plot.group}{Uses plot.color and groups samples by
+  either "chull" or "centroid".}
+
+  \item{plot.group.label}{Add label to the groups (default:
+  F).}
 
   \item{envfit.factor}{A vector of factor variables from
   the sample data used for envfit to the model.}

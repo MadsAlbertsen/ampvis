@@ -26,6 +26,9 @@ amp_headtmap(data)
   \item{tax.clean}{Replace the phylum Proteobacteria with
   the respective Classes instead (default: T).}
 
+  \item{tax.empty}{Either "remove" OTUs without taxonomic
+  information or "rename" with OTU ID (default: rename).}
+
   \item{order.x}{A taxonomy group or vector to order the
   x-axis by.}
 
