@@ -7,6 +7,7 @@
 #' @param data (required) A phyloseq object including sample data.
 #' @param trans Transform the raw counts, currently supports "none" or "sqrt" (default: "sqrt").
 #' @param ordinate.type Either PCA or NMDS (default: "PCA").
+#' @param constrain Constrain the PCA by a sample variable.
 #' @param ncomp The number of principal components to extract if using PCA (default: 5)
 #' @param plot.x Variable to plot on the x-axis if using PCA (default: "PC1")
 #' @param plot.y Variable to plot on the y-axis if using PCA (default: "PC2")
@@ -22,6 +23,7 @@
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
 #' @param envfit.resize Scale the size of the numeric arrows (default: 1).
 #' @param tax.clean Add best assignment to Genus level classification if none exists.
+#' @param scale.species Rescale the plotted loadings to maximise visability (default: F).
 #' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
@@ -36,7 +38,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.label = NULL, plot.group = NULL, plot.group.label = F, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot"){
+amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.label = NULL, plot.group = NULL, plot.group.label = F, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F){
   
   ## Load the data and extract relevant dataframes from the phyloseq object
   
@@ -93,6 +95,14 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
       loadings$MDS2 <- loadings$MDS2*attributes(model$species)$shrinkage[2]
       OTU <- gsub("denovo", "", rownames(loadings))
       loadings <- cbind.data.frame(loadings, OTU)
+     
+      if(scale.species == T){
+        maxx <- max(abs(scores[,plot.x]))/max(abs(loadings[,plot.x]))
+        loadings[, plot.x] <- loadings[, plot.x] * maxx * 0.8
+        
+        maxy <- max(abs(scores[,plot.y]))/max(abs(loadings[,plot.y]))
+        loadings[, plot.y] <- loadings[, plot.y] * maxy * 0.8 
+      }
       
       species <- cbind(loadings, loadings[,plot.x]^2 + loadings[,plot.y]^2)
       colnames(species)[ncol(species)] <- "dist"
@@ -104,9 +114,24 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
   ## Calculate PCA
   
   if (ordinate.type == "PCA"){
+
+    if(is.null(constrain)){
+      model <- rda(t(abund1))  
+      exp <- round(model$CA$eig/model$CA$tot.chi*100,1)
+    }
     
-    model <- rda(t(abund1))
-    exp <- round(model$CA$eig/model$CA$tot.chi*100,1)
+    if(!is.null(constrain)){
+      constrain1 <- sample[, constrain]
+      colnames(constrain1) <- "constrain"
+      model <- rda(t(abund1) ~ constrain1$constrain)  
+      plot.x <- "RDA1"
+      if (model$CCA$rank > 1){
+        plot.y <- "RDA2"
+      }
+        exp <- round(model$CA$eig/model$CA$tot.chi*100,1)
+        expCCA <- round(model$CCA$eig/model$CA$tot.chi*100,1)
+        exp <- c(exp, expCCA)
+    }
     
     scores <- scores(model, choices = 1:ncomp)$sites
     combined <- cbind.data.frame(sample, scores)
@@ -114,6 +139,15 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     loadings <- cbind.data.frame(scores(model, choices = 1:ncomp)$species, tax)
     OTU <- gsub("denovo", "", rownames(loadings))
     loadings <- cbind.data.frame(loadings, OTU)
+    
+    if(scale.species == T){
+      maxx <- max(abs(scores[,plot.x]))/max(abs(loadings[,plot.x]))
+      loadings[, plot.x] <- loadings[, plot.x] * maxx * 0.8
+      
+      maxy <- max(abs(scores[,plot.y]))/max(abs(loadings[,plot.y]))
+      loadings[, plot.y] <- loadings[, plot.y] * maxy * 0.8
+      
+    }
     
     species <- cbind(loadings, loadings[,plot.x]^2 + loadings[,plot.y]^2)
     colnames(species)[ncol(species)] <- "dist"
@@ -173,11 +207,33 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     if(ordinate.type == "PCA"){
       p <- p + xlab(paste(plot.x, " [",exp[plot.x],"%]", sep = "")) +
         ylab(paste(plot.y, " [",exp[plot.y],"%]", sep = ""))  
-    }    
+    }  
+  
+    ###Plot: Group the data either by centroid or chull
+    if (!is.null(plot.group) & !is.null(plot.color)){
+      ts <- data.frame(group = combined[,plot.color], x = combined[,plot.x], y = combined[,plot.y])
+      os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
+      os2 <- merge(combined, os, by.x=plot.color, by.y = "group")
+      if (plot.group == "centroid"){
+        p <- p + geom_segment(data=os2, aes_string(x = plot.x, xend = "cx", y = plot.y, yend = "cy", color = plot.color), size = 1)
+      }
+    
+      if (plot.group == "chull"){
+        find_hull <- function(df) df[chull(df[,plot.x], df[,plot.y]), ]
+        hulls <- ddply(combined, plot.color, find_hull)
+        p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
+      }
+    
+      if (plot.group.label == T){
+        p <- p + 
+          geom_text(data=os2, aes_string(x = "cx", y = "cy", label = plot.color), size = 4, color = "black") 
+      }
+    }
+  
     
     ### Plot: Plot the names of the n most extreme species
     if(!is.null(plot.nspecies)){
-      p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = "Genus"), colour = "black", size = 4, hjust = -0.05, vjust = 1)
+      p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = "Genus"), colour = "black", size = 4)
     }
     
     ### Plot: Environmental factors
@@ -200,28 +256,6 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
         geom_text(data=n.sig2, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = "darkred")
       }
     }  
-  
-    ###Plot: Group the data either by centroid or chull
-    if (!is.null(plot.group) & !is.null(plot.color)){
-      ts <- data.frame(group = combined[,plot.color], x = combined[,plot.x], y = combined[,plot.y])
-      os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
-      os2 <- merge(combined, os, by.x=plot.color, by.y = "group")
-      if (plot.group == "centroid"){
-        p <- p + geom_segment(data=os2, aes_string(x = plot.x, xend = "cx", y = plot.y, yend = "cy", color = plot.color), size = 1)
-      }
-      
-      if (plot.group == "chull"){
-        find_hull <- function(df) df[chull(df[,plot.x], df[,plot.y]), ]
-        hulls <- ddply(combined, plot.color, find_hull)
-        p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
-      }
-      
-      if (plot.group.label == T){
-        p <- p + 
-          geom_text(data=os2, aes_string(x = "cx", y = "cy", label = plot.color), size = 4, color = "black") 
-      
-      }
-    }
   
   ### Plot: Label all samples using sample data
   

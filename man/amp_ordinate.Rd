@@ -14,6 +14,8 @@ amp_ordinate(data)
   \item{ordinate.type}{Either PCA or NMDS (default:
   "PCA").}
 
+  \item{constrain}{Constrain the PCA by a sample variable.}
+
   \item{ncomp}{The number of principal components to
   extract if using PCA (default: 5)}
 
@@ -55,6 +57,9 @@ amp_ordinate(data)
 
   \item{tax.clean}{Add best assignment to Genus level
   classification if none exists.}
+
+  \item{scale.species}{Rescale the plotted loadings to
+  maximise visability (default: F).}
 
   \item{output}{Either plot or complete (default: "plot").}
 }

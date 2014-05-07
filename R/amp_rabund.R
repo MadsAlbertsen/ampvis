@@ -32,7 +32,7 @@ amp_rabund <- function(data, group = NULL, tax.show = 50, scale.seq = 20000, tax
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
-  sample <- suppressWarnings(as.data.frame(sample_data(data)))
+  sample <- suppressWarnings(data.frame(sample_data(data)))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
@@ -90,6 +90,16 @@ amp_rabund <- function(data, group = NULL, tax.show = 50, scale.seq = 20000, tax
   ## Subset to X most abundant "OTUs"
   TotalCounts <- ddply(temp2, c(tax.aggregate,names[1],names[2]), summarise, Abundance = median(Abundance))
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
+  
+  if (is.numeric(tax.show)){
+    if (tax.show > nrow(TotalCounts)){
+      tax.show <- nrow(TotalCounts)
+    }
+  }
+  if (!is.numeric(tax.show)){
+    tax.show <- nrow(TotalCounts)
+  }
+  
   abund4 <- subset(temp2, temp2[, tax.aggregate] %in% TotalCounts[1:tax.show, tax.aggregate])
   abund4[,tax.aggregate] <- factor(abund4[, tax.aggregate], levels = rev(TotalCounts[1:tax.show, tax.aggregate])) 
   

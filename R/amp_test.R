@@ -9,8 +9,9 @@
 #' @param tax.aggregate Group data at specific taxonomic level (defaul: "Genus").
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
-#' @param sig.pval Significance cutoff for plotting the data (default: 0.01)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000).
+#' @param output To output the "pval" or the "complete" data inclusive dataframes (default: "pval").
+#' @param sig Significance cutoff to report results (default: 1).
 #' 
 #' @return A p-value for each comparison.
 #' 
@@ -23,7 +24,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.empty = "rename", scale.seq = 20000, sig.pval = 0.01){
+amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.empty = "rename", scale.seq = 20000, output = "pval", sig = 1){
   
   ## Extract all data from the phyloseq object 
   abund <- as.data.frame(otu_table(data))
@@ -84,15 +85,14 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
     
     ### If the group contains 2 levels then use a simple t-test
     if (length(levels(sample[,group]))==2){
-      res.ttest <- ddply(t4, tax.aggregate, summarise, pval = t.test(Abundance~group)$p.value)    
-      sig <- subset(res.ttest, pval <= sig.pval)
-      q5 <- subset(q4, q4[,tax.aggregate] %in% sig[, 1])
-      q5$Abundance <- q5$Abundance/scale.seq*100
-      p <- ggplot(q5, aes_string(x = tax.aggregate, y = "Abundance", color = group)) +
+      res0 <- ddply(t4, tax.aggregate, summarise, pval = t.test(Abundance~group)$p.value)    
+      res <- subset(res0, pval <= sig)
+      q5 <- subset(q4, q4[,tax.aggregate] %in% res[,tax.aggregate])
+      
+      p <- ggplot(data = q5, aes_string(x = tax.aggregate, y = "Abundance", color = group)) +
         geom_boxplot() +
-        coord_flip() +
-        ylab("Abundance (%)")
-    }
+        coord_flip()
+      }
     
     ### If the group contains more that 2 levels then use something like anova
     if (length(levels(sample[,group]))>2){
@@ -107,8 +107,26 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
       #fit.tukeyHSD <- TukeyHSD(fit.aov)
     }
     
-  }  
+  }
   
-  outlist <- list(result.ttest = res.ttest, plot = p)
-  return(outlist)
+  if (is.numeric(sample[,group])){
+    res0 <- ddply(t4, tax.aggregate, summarise, pval = cor.test(Abundance, group)$p.value)
+    
+    res <- subset(res0, pval <= sig)
+    q5 <- subset(q4, q4[,tax.aggregate] %in% res[,tax.aggregate])
+    
+    p <- ggplot(data = q5, aes_string(x = group, y = "Abundance", color = tax.aggregate)) +
+      geom_point(size = 3) +
+      geom_smooth(method = "lm", size = 1)
+  }
+  
+  outlist <- list(pval = res, data = q4, plot = p)
+  
+  if (output == "complete"){
+    return(outlist)  
+  }
+  if (output == "pval"){
+    return(res)
+  }
+  
 }

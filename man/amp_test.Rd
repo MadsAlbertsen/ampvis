@@ -21,10 +21,13 @@ amp_test(data, group)
   information or "rename" with OTU ID (default: rename).}
 
   \item{scale.seq}{The number of sequences in the
-  pre-filtered samples (default: 20000)}
+  pre-filtered samples (default: 20000).}
 
-  \item{sig.pval}{Significance cutoff for plotting the data
-  (default: 0.01)}
+  \item{output}{To output the "pval" or the "complete" data
+  inclusive dataframes (default: "pval").}
+
+  \item{sig}{Significance cutoff to report results
+  (default: 1).}
 }
 \value{
 A p-value for each comparison.

@@ -115,6 +115,9 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
   
   if (is.numeric(tax.show)){
+    if (tax.show > nrow(TotalCounts)){
+      tax.show <- nrow(TotalCounts)
+    }
     abund7 <- subset(abund6, abund6[,1] %in% TotalCounts[1:tax.show,tax.aggregate])  
   }
   if (!is.numeric(tax.show)){
