@@ -29,8 +29,6 @@
 
 amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", name2 = "Phylum", tax.aggregate = "OTU", tax.empty = "rename"){
   
-  print(paste("Start", Sys.time()))
-  
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
@@ -82,7 +80,6 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
     }
   }
   
-  print(paste("tax cleaned", Sys.time()))
   ## Merge the taxonomic and abundance information
   
   abund2 <- cbind.data.frame(tax, abund)
@@ -96,7 +93,6 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   ## Merge sample data
   temp1 <- join(x = abund3, y = data.frame(sample), by = "Sample")
   
-  print(paste("join done", Sys.time()))
   
   ## Summarise to specific taxonomic levels and groups using data.table for blazing speed
   colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
@@ -117,14 +113,10 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   
   colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
   colnames(temp2)[colnames(temp2) == "var2"] <- name2
-
-  print(paste("DT done", Sys.time()))
   
   ## Subset to X most abundant "OTUs"
   TotalCounts <- ddply(temp2, c(tax.aggregate,name2), summarise, Abundance = median(Abundance))
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
-  
-  print(paste("ddply done", Sys.time()))
   
   ## Make sure we only show a possible number of taxa
   if (is.numeric(tax.show)){

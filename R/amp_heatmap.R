@@ -30,7 +30,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap2 <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
+amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
   
   ## Extract all data from the phyloseq object
   
@@ -58,8 +58,10 @@ amp_heatmap2 <- function(data, group = NULL, normalise = NULL, scale = NULL, tax
   ## Change Proteobacteria to Class level
   
   if(tax.clean == T){
-    tax$Phylum <- as.character(tax$Phylum)
-    tax$Class <- as.character(tax$Class)
+    for ( i in 1:ncol(tax)){
+      tax[,i] <- as.character(tax[,i])  
+    }
+    
     for (i in 1:nrow(tax)){
       if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == "p__Proteobacteria"){
         tax$Phylum[i] <- tax$Class[i]   

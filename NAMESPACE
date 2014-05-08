@@ -1,5 +1,5 @@
 export(amp_correlation)
-export(amp_heatmap2)
+export(amp_heatmap)
 export(amp_ordinate)
 export(amp_rabund)
 export(amp_test)
