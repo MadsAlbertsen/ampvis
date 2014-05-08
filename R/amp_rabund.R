@@ -27,7 +27,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", name2 = "Phylum", tax.aggregate = "OTU", tax.empty = "rename"){
+amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", name2 = "Phylum", tax.aggregate = "Genus", tax.empty = "rename"){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -62,7 +62,7 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
     if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
   
   #### Handle empty taxonomic strings
-    if(tax.empty == "rename"){  
+    if(tax.empty == "rename" & tax.aggregate != "OTU"){  
       t2 <- tax
       a1 <- data.frame(OTU = as.character(t2[,"OTU"]), temp = as.character(t2[,tax.aggregate]), OTU1 = as.character(t2[,"OTU"]))
       a2 <- subset(a1, temp != "")[,1:2]
