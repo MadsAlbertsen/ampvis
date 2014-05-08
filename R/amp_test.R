@@ -11,7 +11,7 @@
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000).
 #' @param output To output the "pval" or the "complete" data inclusive dataframes (default: "pval").
-#' @param sig Significance cutoff to report results (default: 1).
+#' @param sig Significance cutoff to report results (default: 0.01).
 #' 
 #' @return A p-value for each comparison.
 #' 
@@ -24,7 +24,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.empty = "rename", scale.seq = 20000, output = "pval", sig = 1){
+amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.empty = "rename", scale.seq = 20000, output = "pval", sig = 0.01){
   
   ## Extract all data from the phyloseq object 
   abund <- as.data.frame(otu_table(data))
@@ -67,11 +67,16 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
   ## Combine it to a single data frame
   q <- cbind.data.frame(tax, abund)
   q2 <- melt(q, id.vars=colnames(tax))
-  colnames(q2)[(ncol(q2)-1):ncol(q2)] <- c("SampleID","Abundance")
-  colnames(sample)[1] <- "SampleID"
+  colnames(q2)[(ncol(q2)-1):ncol(q2)] <- c("Sample","Abundance")
+  colnames(sample)[1] <- "Sample"
   
   ## Aggregate to a specific level
-  q3 <- ddply(q2, c(tax.aggregate,"SampleID"), summarise, Abundance = sum(Abundance))
+
+  colnames(q2)[colnames(q2) == tax.aggregate] <- "var1"
+  DT1 <- data.table(q2)
+  DT2 <- DT1[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, Sample), .SDcols=c("Abundance") ]   
+  q3 <- data.frame(DT2)
+  colnames(q3)[colnames(q3) == "var1"] <- tax.aggregate  
   
   ## Merge with sample data
   q4 <- merge(x = sample, y = q3)
@@ -87,7 +92,11 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
     if (length(levels(sample[,group]))==2){
       res0 <- ddply(t4, tax.aggregate, summarise, pval = t.test(Abundance~group)$p.value)    
       res <- subset(res0, pval <= sig)
-      q5 <- subset(q4, q4[,tax.aggregate] %in% res[,tax.aggregate])
+      res <- res[order(res$pval),]
+      
+      q5 <- droplevels(subset(q4, q4[,tax.aggregate] %in% res[,tax.aggregate]))
+      
+      q5[,tax.aggregate] <- factor(q5[,tax.aggregate], levels = rev(res[,tax.aggregate]))
       
       p <- ggplot(data = q5, aes_string(x = tax.aggregate, y = "Abundance", color = group)) +
         geom_boxplot() +
@@ -113,6 +122,7 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
     res0 <- ddply(t4, tax.aggregate, summarise, pval = cor.test(Abundance, group)$p.value)
     
     res <- subset(res0, pval <= sig)
+    res <- res[order(res$pval),]
     q5 <- subset(q4, q4[,tax.aggregate] %in% res[,tax.aggregate])
     
     p <- ggplot(data = q5, aes_string(x = group, y = "Abundance", color = tax.aggregate)) +

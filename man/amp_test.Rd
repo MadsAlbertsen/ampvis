@@ -27,7 +27,7 @@ amp_test(data, group)
   inclusive dataframes (default: "pval").}
 
   \item{sig}{Significance cutoff to report results
-  (default: 1).}
+  (default: 0.01).}
 }
 \value{
 A p-value for each comparison.
