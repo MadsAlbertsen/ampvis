@@ -37,6 +37,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
+  tax <- data.frame(tax, OTU = rownames(tax))
   
   ## Extract group information
   if (!is.null(group)){
@@ -92,8 +93,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   
   ## Merge the taxonomic and abundance information
   
-  abund2 <- cbind.data.frame(rownames(abund), tax, abund)
-  colnames(abund2)[1] <- "OTU"
+  abund2 <- cbind.data.frame(tax, abund)
   
   ## Aggregate to a specific taxonomic level
   
