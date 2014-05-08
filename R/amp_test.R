@@ -98,6 +98,8 @@ amp_test <- function(data, group, tax.aggregate = "Genus", tax.clean = T, tax.em
       
       q5[,tax.aggregate] <- factor(q5[,tax.aggregate], levels = rev(res[,tax.aggregate]))
       
+      q5$Abundance <- q5$Abundance/scale.seq*100
+      
       p <- ggplot(data = q5, aes_string(x = tax.aggregate, y = "Abundance", color = group)) +
         geom_boxplot() +
         coord_flip()
