@@ -27,8 +27,8 @@ amp_rabund(data)
   \item{plot.type}{Either point or boxplot
   (default:point).}
 
-  \item{names}{Two taxonomic levels used for naming,
-  supplied as a vector (default: c("Genus", "Phylum")).}
+  \item{name2}{A taxonomic level used for naming (default:
+  "Phylum").}
 
   \item{output}{Either plot or complete (default: "plot").}
 }

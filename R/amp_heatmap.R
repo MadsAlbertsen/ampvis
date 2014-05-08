@@ -30,7 +30,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
+amp_heatmap2 <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 20000, output = "plot"){
   
   ## Extract all data from the phyloseq object
   
@@ -98,16 +98,28 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   abund3 <- melt(abund2, id.var = tax.aggregate, measure.vars=rownames(sample))
   colnames(abund3)[2] <- "Sample"
   colnames(abund3)[3] <- "Abundance"
-  abund4 <- ddply(abund3, c(tax.aggregate,"Sample"), summarise, Abundance = sum(Abundance))
+  
+  colnames(abund3)[colnames(abund3) == tax.aggregate] <- "var1"
+  DT <- data.table(abund3)
+  DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, Sample), .SDcols=c("Abundance") ]   
+  abund4 <- data.frame(DT2)
+  colnames(abund4)[colnames(abund4) == "var1"] <- tax.aggregate
+  
   abund4 <- subset(abund4, abund4[,tax.aggregate] != "<NA>")
   
   ## Add group information
   
-  abund5 <- merge(abund4, grp, by="Sample")
+  abund5 <- join(abund4, grp, by="Sample")
   
-  ## Take the average of the replicates if any
+  ## Take the average to group level
   
-  abund6 <- ddply(abund5, c(tax.aggregate,colnames(grp[2])), summarise, Abundance = mean(Abundance))
+  colnames(abund5)[colnames(abund5) == tax.aggregate] <- "var1"
+  colnames(abund5)[colnames(abund5) == colnames(grp[2])] <- "var2"
+  DT3 <- data.table(abund5)
+  DT4 <- DT3[, lapply(.SD, mean, na.rm=TRUE), by=list(var1, var2), .SDcols=c("Abundance") ]   
+  abund6 <- data.frame(DT4)
+  colnames(abund6)[colnames(abund6) == "var1"] <- tax.aggregate
+  colnames(abund6)[colnames(abund6) == "var2"] <- colnames(grp[2])
   
   ## Find the X most abundant levels
   
@@ -204,6 +216,5 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   }
   if (output == "plot"){
     return(p)
-  }
-  
+  } 
 }

@@ -18,4 +18,5 @@ Depends:
     knitr,
     igraph,
     RColorBrewer,
-    Biostrings
+    Biostrings,
+    data.table

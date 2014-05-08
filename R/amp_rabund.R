@@ -12,7 +12,7 @@
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
 #' @param plot.type Either point or boxplot (default:point).
-#' @param names Two taxonomic levels used for naming, supplied as a vector (default: c("Genus", "Phylum")).
+#' @param name2 A taxonomic level used for naming (default: "Phylum").
 #' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
@@ -23,29 +23,37 @@
 #' @import reshape2
 #' @import phyloseq
 #' @import grid
+#' @import data.table
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = NULL, tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", names = c("Genus", "Phylum"), tax.aggregate = "OTU", tax.empty = "rename"){
+amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", name2 = "Phylum", tax.aggregate = "OTU", tax.empty = "rename"){
+  
+  print(paste("Start", Sys.time()))
   
   ## Extract all data from the phyloseq object
-  
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
   sample <- suppressWarnings(data.frame(sample_data(data)))
+  tax <- data.frame(tax, OTU = rownames(tax))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
-  ## Change Proteobacteria to Class level
   
+  
+  ## Clean the taxonomy
   if(tax.clean == T){
-    tax$Phylum <- as.character(tax$Phylum)
-    tax$Class <- as.character(tax$Class)
+    for ( i in 1:ncol(tax)){
+      tax[,i] <- as.character(tax[,i])  
+    }
+  #### Change Proteobacteria to Class level  
     for (i in 1:nrow(tax)){
       if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == "p__Proteobacteria"){
         tax$Phylum[i] <- tax$Class[i]   
       }
     }
+  
+  #### Remove the greengenes level prefix
     tax$Phylum <- gsub("p__", "", tax$Phylum)
     tax$Phylum <- gsub("c__", "", tax$Phylum)
     tax$Class <- gsub("c__", "", tax$Class)
@@ -54,43 +62,71 @@ amp_rabund <- function(data, group = NULL, tax.show = 50, scale.seq = 20000, tax
     tax$Genus <- gsub("g__", "", tax$Genus)
     tax[is.na(tax)] <- ""
     if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
-    
-    if(tax.empty == "rename"){
-      for (i in 1:nrow(tax)){
-        if (tax[i,tax.aggregate] == ""){
-          tax[i,tax.aggregate] <- rownames(tax)[i]
-        }
-      }    
+  
+  #### Handle empty taxonomic strings
+    if(tax.empty == "rename"){  
+      t2 <- tax
+      a1 <- data.frame(OTU = as.character(t2[,"OTU"]), temp = as.character(t2[,tax.aggregate]), OTU1 = as.character(t2[,"OTU"]))
+      a2 <- subset(a1, temp != "")[,1:2]
+      colnames(a2)[2] <- tax.aggregate 
+      a3 <- subset(a1, temp == "")[,c(1,3)]
+      colnames(a3)[2] <- tax.aggregate
+      a4 <- rbind(a2, a3)
+      a5 <- t2[ , -which(names(t2) %in% tax.aggregate)]      
+      a7 <- join(a5, a4, by = "OTU")
+      tax <- a7
     }
-    
     if(tax.empty == "remove"){
       tax <- subset(tax, tax[,tax.aggregate] != "")
       abund <- subset(abund, rownames(abund) %in% rownames(tax))
     }
   }
   
+  print(paste("tax cleaned", Sys.time()))
   ## Merge the taxonomic and abundance information
   
-  abund2 <- cbind.data.frame(rownames(abund), tax, abund)
-  colnames(abund2)[1] <- "OTU"
+  abund2 <- cbind.data.frame(tax, abund)
   
   ## Melt data to long format
-  abund3 <- melt(abund2, id.var = c("OTU",colnames(tax)), measure.vars=rownames(sample))
+  abund3 <- melt(abund2, id.var = c(colnames(tax)), measure.vars=rownames(sample))
   colnames(abund3)[ncol(abund3)] <- "Abundance" 
   colnames(abund3)[ncol(abund3)-1] <- "Sample" 
   colnames(sample)[1] <- "Sample"
   
-  ## Add sample data
-  temp1 <- merge(x = abund3, y = data.frame(sample), by.x = "Sample", by.y = "Sample")
+  ## Merge sample data
+  temp1 <- join(x = abund3, y = data.frame(sample), by = "Sample")
   
-  ## Tax aggregate
+  print(paste("join done", Sys.time()))
   
-  temp2 <- ddply(temp1, c(tax.aggregate, group, names[1], names[2], "Sample"), summarise, Abundance = sum(Abundance))
+  ## Summarise to specific taxonomic levels and groups using data.table for blazing speed
+  colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
+  colnames(temp1)[colnames(temp1) == name2] <- "var2"
+  
+  if(group != "Sample"){
+    colnames(temp1)[colnames(temp1) == group] <- "var3"
+    DT <- data.table(temp1)
+    DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, var2, var3, Sample), .SDcols=c("Abundance") ]
+    temp2 <- data.frame(DT2)
+    colnames(temp2)[colnames(temp2) == "var3"] <- group
+  }
+  if(group == "Sample"){
+    DT <- data.table(temp1)
+    DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, var2, Sample), .SDcols=c("Abundance") ]
+    temp2 <- data.frame(DT2)
+  }
+  
+  colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
+  colnames(temp2)[colnames(temp2) == "var2"] <- name2
+
+  print(paste("DT done", Sys.time()))
   
   ## Subset to X most abundant "OTUs"
-  TotalCounts <- ddply(temp2, c(tax.aggregate,names[1],names[2]), summarise, Abundance = median(Abundance))
+  TotalCounts <- ddply(temp2, c(tax.aggregate,name2), summarise, Abundance = median(Abundance))
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
   
+  print(paste("ddply done", Sys.time()))
+  
+  ## Make sure we only show a possible number of taxa
   if (is.numeric(tax.show)){
     if (tax.show > nrow(TotalCounts)){
       tax.show <- nrow(TotalCounts)
@@ -99,25 +135,26 @@ amp_rabund <- function(data, group = NULL, tax.show = 50, scale.seq = 20000, tax
   if (!is.numeric(tax.show)){
     tax.show <- nrow(TotalCounts)
   }
-  
+    
   abund4 <- subset(temp2, temp2[, tax.aggregate] %in% TotalCounts[1:tax.show, tax.aggregate])
+  abund4 <- droplevels(abund4)
   abund4[,tax.aggregate] <- factor(abund4[, tax.aggregate], levels = rev(TotalCounts[1:tax.show, tax.aggregate])) 
   
-  
+  ## Scale to a specific abundance
   abund4$Abundance <- abund4$Abundance/scale.seq*100
   
   ## plot the data
   
-  if (is.null(group)){
+  if (group == "Sample"){
     p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance"))   
   }
-  if (!is.null(group)){
+  if (group != "Sample"){
     p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance", color = group))   
   }
 
   p <- p +
   coord_flip() +
-  scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, names[1]], TotalCounts[1:tax.show, names[2]], sep = "; "))) +
+  scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, tax.aggregate], TotalCounts[1:tax.show, name2], sep = "; "))) +
   ylab("Abundance (%)")
   
   if (plot.type == "point"){
