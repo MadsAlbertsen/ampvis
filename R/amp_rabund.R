@@ -11,7 +11,7 @@
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
-#' @param plot.type Either point or boxplot (default:point).
+#' @param plot.type Either point, boxplot or curve (default: boxplot).
 #' @param name2 A taxonomic level used for naming (default: "Phylum").
 #' @param output Either plot or complete (default: "plot").
 #' 
@@ -114,6 +114,8 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
   colnames(temp2)[colnames(temp2) == "var2"] <- name2
   
+  if (plot.type != "curve"){
+  
   ## Subset to X most abundant "OTUs"
   TotalCounts <- ddply(temp2, c(tax.aggregate,name2), summarise, Abundance = median(Abundance))
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
@@ -134,8 +136,8 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   
   ## Scale to a specific abundance
   abund4$Abundance <- abund4$Abundance/scale.seq*100
-  
-  ## plot the data
+
+    ## plot the data
   
   if (group == "Sample"){
     p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance"))   
@@ -157,6 +159,43 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   }
   if (plot.log ==T){
    p <- p + scale_y_log10() 
+  }
+  }
+  
+  ## If type = curve then generate a second dataframe
+  
+  if (plot.type == "curve"){
+    temp2$Abundance <- temp2$Abundance/scale.seq*100
+    if (group != "Sample"){      
+      temp3 <- ddply(temp2, c(tax.aggregate, group), summarise, Mean = mean(Abundance))
+      temp3 <- temp3[with(temp3, order(-Mean)),]
+      test <- ddply(temp3, group, transform , dummy = 1)
+      TotalCounts <- ddply(test, group, transform, Cumsum = cumsum(Mean), Rank = cumsum(dummy))
+      
+      p <- ggplot(data = TotalCounts, aes_string(x = "Rank", y = "Cumsum", color = group)) +
+        geom_line(size = 2) +
+        xlab("Rank abundance") +
+        ylab("Cummulative read abundance (%)")  
+      if (plot.log ==T){
+        p <- p + scale_x_log10() 
+      }
+      
+    }
+    if (group == "Sample"){
+      TotalCounts <- ddply(temp2, tax.aggregate, summarise, Mean = mean(Abundance))  
+      TotalCounts <- TotalCounts[with(TotalCounts, order(-Mean)),]      
+      
+      p <- ggplot(data = TotalCounts, aes(x = 1:nrow(TotalCounts), y = cumsum(Mean))) +
+        geom_line(size = 2) +
+        xlab("Rank abundance") +
+        ylab("Cummulative read abundance (%)")  
+        if (plot.log ==T){
+          p <- p + scale_x_log10() 
+        }
+    } 
+    
+    abund4 <- TotalCounts
+    
   }
   
   outlist <- append(outlist, list(dataframe = abund4, plot = p))

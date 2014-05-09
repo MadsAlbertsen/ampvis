@@ -1,3 +1,4 @@
+export(amp_core)
 export(amp_correlation)
 export(amp_heatmap)
 export(amp_ordinate)

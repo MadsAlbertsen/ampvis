@@ -1,16 +1,14 @@
-\name{amp_rabund}
-\alias{amp_rabund}
-\title{Generates a ggplot2 style rank abundance plot of the most abundant OTUs}
+\name{amp_core}
+\alias{amp_core}
+\title{Generates a ggplot2 style core community plots}
 \usage{
-amp_rabund(data)
+amp_core(data)
 }
 \arguments{
   \item{data}{(required) A phyloseq object.}
 
-  \item{group}{Group the data based on a sample variable.}
-
-  \item{tax.show}{The number of taxa to show or a vector of
-  taxa names (default: 10).}
+  \item{group}{Group the data based on a sample variable
+  (default: "Sample").}
 
   \item{tax.clean}{Replace the phylum Proteobacteria with
   the respective Classes instead (default: T).}
@@ -24,11 +22,14 @@ amp_rabund(data)
   \item{scale.seq}{The number of sequences in the
   pre-filtered samples (default: 20000)}
 
-  \item{plot.type}{Either point, boxplot or curve (default:
-  boxplot).}
+  \item{plot.type}{Either core or frequency (default:
+  frequency).}
 
-  \item{name2}{A taxonomic level used for naming (default:
-  "Phylum").}
+  \item{weight}{Weight the frequency by abundance (default:
+  T).}
+
+  \item{abund.treshold}{Treshold for considering something
+  abundant in percent (default: 0.1).}
 
   \item{output}{Either plot or complete (default: "plot").}
 }

@@ -21,6 +21,7 @@
 #' @import reshape2
 #' @import phyloseq
 #' @import grid
+#' @import data.table
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
