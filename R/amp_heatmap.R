@@ -7,7 +7,7 @@
 #' @param data (required) A phyloseq object including sample data.
 #' @param group A variable from the associated sample data to group samples by.
 #' @param scale A variable from the associated sample data to scale the abundance by.
-#' @param normalise A sample or group to normalise the counts to.
+#' @param normalise A specific sample or group to normalise the counts to, or "relative".
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: Phylum)
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
@@ -141,25 +141,44 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   ## Normalise to a specific group (The Abundance of the group is set as 1)
 
   if(!is.null(normalise)){
-    colnames(abund7) <- c("var1", "var2", "Abundance")
-    temp <- dcast(abund7, var1~var2, value.var = "Abundance")
-    colnames(temp)[1] <- tax.aggregate
-    temp2 <- temp[,-1]  
-    temp3 <- temp2/temp2[,normalise]
-    temp4 <- cbind.data.frame(temp[,1], temp3)    
-    temp5 <- melt(temp4)
-    colnames(temp5) <- c(tax.aggregate, colnames(grp[2]), "Abundance")
-    abund7 <- temp5
+    if (normalise != "relative"){
+      colnames(abund7) <- c("var1", "var2", "Abundance")
+      temp <- dcast(abund7, var1~var2, value.var = "Abundance")
+      colnames(temp)[1] <- tax.aggregate
+      temp2 <- temp[,-1]  
+      temp3 <- temp2/temp2[,normalise]
+      temp4 <- cbind.data.frame(temp[,1], temp3)       
+      colnames(temp4)[1] <- tax.aggregate 
+      temp5 <- melt(temp4, id.var = tax.aggregate)
+      colnames(temp5) <- c(tax.aggregate, colnames(grp[2]), "Abundance")
+      abund7 <- temp5
+    }
   }
+  
+  if(!is.null(normalise)){
+    if (normalise == "relative"){
+      colnames(abund7) <- c("var1", "var2", "Abundance")
+      temp <- dcast(abund7, var1~var2, value.var = "Abundance")
+      colnames(temp)[1] <- tax.aggregate
+      temp2 <- temp[,-1]  
+      rel <- apply(as.matrix(temp2), 1, mean)
+      temp3 <- temp2/rel
+      temp4 <- cbind.data.frame(temp[,1], temp3)    
+      colnames(temp4)[1] <- tax.aggregate 
+      temp5 <- melt(temp4, id.var = tax.aggregate)
+      colnames(temp5) <- c(tax.aggregate, colnames(grp[2]), "Abundance")
+      abund7 <- temp5    
+    }
+  }
+  
+  
   abund7$Abundance <- round(abund7$Abundance, 1)
   
   
   ## Order.y
   
   if (is.null(order.y)){
-    TotalCounts <- ddply(abund7, tax.aggregate, summarise, Abundance = sum(Abundance))
-    TotalCounts <- TotalCounts[with(TotalCounts, order(Abundance)),]
-    abund7[,1] <- factor(abund7[,1], levels = TotalCounts[,1])
+    abund7[,1] <- factor(abund7[,1], levels = rev(TotalCounts[,1]))
     }
   
   if (!is.null(order.y)){
@@ -195,8 +214,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   ## Make a heatmap style plot
   
   p <- ggplot(abund7, aes_string(x = colnames(grp[2]), y = tax.aggregate, label = formatC("Abundance", format = "f", digits = 1))) + 
-    geom_tile(aes(fill = Abundance), colour = "white", size = 0.5) + 
-    labs(x = "", y = "", fill = "Abundance") + 
+    geom_tile(aes(fill = Abundance), colour = "white", size = 0.5) +     
     theme(axis.text.x = element_text(size = 10, hjust = 1, angle = 90)) + 
     theme(axis.text.y = element_text(size = 12)) + 
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
@@ -209,6 +227,12 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   if (!is.null(plot.breaks)){
       p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = "log10", breaks=plot.breaks)
     }
+  if (is.null(normalise)){
+    p <- p + labs(x = "", y = "", fill = "Abundance")  
+  }
+  if (!is.null(normalise)){
+    p <- p + labs(x = "", y = "", fill = "Relative")  
+  }
   
   ## Define the output 
   

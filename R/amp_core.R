@@ -27,7 +27,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, plot.type = "Frequency", plot.log = F, output = "plot",  tax.aggregate = "OTU", tax.empty = "rename", weight = T, abund.treshold = 0.1){
+amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, plot.type = "frequency", plot.log = F, output = "plot",  tax.aggregate = "OTU", tax.empty = "rename", weight = T, abund.treshold = 0.1){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -36,8 +36,6 @@ amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, p
   tax <- data.frame(tax, OTU = rownames(tax))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
-  
-  
   
   ## Clean the taxonomy
   if(tax.clean == T){
@@ -110,17 +108,18 @@ amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, p
   
   if(plot.type == "frequency"){
     temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), Mean = mean(Abundance)*sum(freq))
+    bw <- ifelse(max(temp3$Frequency) > 30, range(temp3$Frequency)/30, 1)
+      
     if(weight == T){
       p <- ggplot(data = temp3, aes(x = Frequency, weight = Mean / sum(Mean)*100)) +
-        geom_bar(binwidth = 1) +        
+        geom_bar(binwidth = bw) +        
         ylab("Read abundance (%)") +
         xlab(paste("Frequency (Observed in N", group, "s)"))
     }
     
     if(weight == F){
       p <- ggplot(data = temp3, aes(x = Frequency)) +
-        geom_bar(binwidth = 1) +
-        scale_x_discrete(breaks = 1:max(temp3$Frequency)) +
+        geom_bar(binwidth = bw) +
         ylab("Count") +
         xlab(paste("Frequency (Observed in N ", group, "s)", sep=""))
     } 

@@ -43,6 +43,9 @@ amp_ordinate(data)
   \item{plot.group.label}{Add label to the groups (default:
   F).}
 
+  \item{plot.trajectory}{Connects points based on a sample
+  variable e.g. date.}
+
   \item{envfit.factor}{A vector of factor variables from
   the sample data used for envfit to the model.}
 

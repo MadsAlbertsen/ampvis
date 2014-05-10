@@ -14,8 +14,8 @@ amp_headtmap(data)
   \item{scale}{A variable from the associated sample data
   to scale the abundance by.}
 
-  \item{normalise}{A sample or group to normalise the
-  counts to.}
+  \item{normalise}{A specific sample or group to normalise
+  the counts to, or "relative".}
 
   \item{tax.aggregate}{The taxonomic level that the data
   should be aggregated to (defualt: Phylum)}
