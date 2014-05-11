@@ -8,8 +8,7 @@ amp_correlation(data)
   \item{data}{(required) A phyloseq object including sample
   data.}
 
-  \item{trans}{Transform the raw counts, currently only
-  supports "none" or "sqrt" (default: "none").}
+  \item{trans}{Transform the raw counts by "sqrt".}
 
   \item{treshold.cor}{Absolute correlation treshold
   (default: 0.8).}
@@ -32,7 +31,7 @@ amp_correlation(data)
   (default: T).}
 
   \item{label}{Plot taxonomic classifications (e.g.
-  "Genus") instead of points (default: "OTU")}
+  "Genus") instead of points.}
 
   \item{scale.abundance}{Scale the size of nodes by
   abundance (default: F).}

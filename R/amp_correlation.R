@@ -5,14 +5,14 @@
 #' @usage amp_correlation(data)
 #'
 #' @param data (required) A phyloseq object including sample data.
-#' @param trans Transform the raw counts, currently only supports "none" or "sqrt" (default: "none").
+#' @param trans Transform the raw counts by "sqrt".
 #' @param treshold.cor Absolute correlation treshold (default: 0.8).
 #' @param treshold.count Minimum count in order to use a pair of observations for test of correlation (default: 10)
 #' @param treshold.pval P-value treshold for correlations (default: 0.01).
 #' @param treshold.abundance Average abundance treshold (default: 0) 
 #' @param ignore.zero Remove observations where 1 obeservation has 0 counts from the correlation test (default: F)
 #' @param tax.clean Assign best classification to OTUs (default: T).
-#' @param label Plot taxonomic classifications (e.g. "Genus") instead of points (default: "OTU")
+#' @param label Plot taxonomic classifications (e.g. "Genus") instead of points.
 #' @param scale.abundance Scale the size of nodes by abundance (default: F).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
 #' 
@@ -38,7 +38,7 @@ amp_correlation <- function(data, trans = "none", treshold.cor = 0.8, treshold.p
   
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
-  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
+  sample <- data.frame(sample_data(data))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   

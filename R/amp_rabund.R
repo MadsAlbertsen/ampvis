@@ -166,27 +166,31 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   
   if (plot.type == "curve"){
     temp2$Abundance <- temp2$Abundance/scale.seq*100
+    
     if (group != "Sample"){      
       temp3 <- ddply(temp2, c(tax.aggregate, group), summarise, Mean = mean(Abundance))
       temp3 <- temp3[with(temp3, order(-Mean)),]
       test <- ddply(temp3, group, transform , dummy = 1)
       TotalCounts <- ddply(test, group, transform, Cumsum = cumsum(Mean), Rank = cumsum(dummy))
-      
       p <- ggplot(data = TotalCounts, aes_string(x = "Rank", y = "Cumsum", color = group)) +
         geom_line(size = 2) +
+        ylim(0,100) +
         xlab("Rank abundance") +
         ylab("Cummulative read abundance (%)")  
       if (plot.log ==T){
         p <- p + scale_x_log10() 
-      }
-      
+      }  
     }
+    
     if (group == "Sample"){
       TotalCounts <- ddply(temp2, tax.aggregate, summarise, Mean = mean(Abundance))  
       TotalCounts <- TotalCounts[with(TotalCounts, order(-Mean)),]      
+      TotalCounts$Cumsum <- cumsum(TotalCounts$Mean)
+      TotalCounts$x <- 1:nrow(TotalCounts)
       
-      p <- ggplot(data = TotalCounts, aes(x = 1:nrow(TotalCounts), y = cumsum(Mean))) +
+      p <- ggplot(data = TotalCounts, aes(x = x, y = Cumsum)) +
         geom_line(size = 2) +
+        ylim(0,100) +
         xlab("Rank abundance") +
         ylab("Cummulative read abundance (%)")  
         if (plot.log ==T){
