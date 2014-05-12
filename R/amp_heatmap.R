@@ -135,7 +135,14 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
     abund7 <- subset(abund6, abund6[,1] %in% TotalCounts[1:tax.show,tax.aggregate])  
   }
   if (!is.numeric(tax.show)){
-    abund7 <- subset(abund6, abund6[,1] %in% tax.show)  
+    if (tax.show != "all"){
+      abund7 <- subset(abund6, abund6[,1] %in% tax.show)    
+    }
+    if (tax.show == "all"){
+      tax.show <- nrow(TotalCounts)  
+      abund7 <- subset(abund6, abund6[,1] %in% TotalCounts[1:tax.show,tax.aggregate])  
+    }
+    
   }
 
   ## Normalise to a specific group (The Abundance of the group is set as 1)
@@ -172,7 +179,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   }
   
   
-  abund7$Abundance <- round(abund7$Abundance, 1)
+  abund7$Abundance <- round(abund7$Abundance, 3)
   
   
   ## Order.y
@@ -208,7 +215,7 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   ## Scale to percentages if not normalised and scaled
   
   if (is.null(scale) & is.null(normalise)){
-    abund7[,3] <- round(abund7[,3]/scale.seq*100,1)
+    abund7[,3] <- round(abund7[,3]/scale.seq*100,3)
   }
   
   ## Make a heatmap style plot

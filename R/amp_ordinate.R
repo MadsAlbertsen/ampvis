@@ -17,8 +17,9 @@
 #' @param plot.nspecies Plot the n most extreme species with their genus classification (default: 0).
 #' @param plot.label Label points using a sample variable.
 #' @param plot.group Uses plot.color and groups samples by either "chull" or "centroid".
-#' @param plot.group.label Add label to the groups (default: F).
-#' @param plot.trajectory Connects points based on a sample variable e.g. date.
+#' @param plot.group.label Add label based on the centroid of the specified group.
+#' @param trajectory Connects points based on a sample variable e.g. date.
+#' @param trajectory.group Split the trajectory by a group.
 #' @param envfit.factor A vector of factor variables from the sample data used for envfit to the model.
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
@@ -39,7 +40,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.label = NULL, plot.group = NULL, plot.group.label = F, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F, plot.trajectory = NULL){
+amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory){
   
   ## Load the data and extract relevant dataframes from the phyloseq object
   
@@ -200,14 +201,14 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
       p <- p + geom_point(data = species, color = "grey")        
     }
   
+    ###Plot: Add trajectory based on e.g. data
+    if (!is.null(trajectory)){
+      traj <- combined[order(combined[,trajectory]),]
+      p <- p + geom_path(data = traj, aes_string(group = trajectory.group))
+    }
+  
     ### Plot: Add samples as points
     p <- p + geom_point(size = plot.point.size)
-    
-    ###Plot: Add trajectory based on e.g. data
-    if (!is.null(plot.trajectory)){
-      traj <- combined[order(combined[,plot.trajectory]),]
-      p <- p + geom_path(data = traj)  
-    }
   
     ### Plot: If PCA add explained variance to the axis
     if(ordinate.type == "PCA"){
@@ -229,14 +230,16 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
         hulls <- ddply(combined, plot.color, find_hull)
         p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
       }
-    
-      if (plot.group.label == T){
-        os3<- os2[!duplicated(os2[,plot.color]),]
-        p <- p + geom_text(data=os3, aes_string(x = "cx", y = "cy", label = plot.color), size = 4, color = "black", fontface = 2) 
-      }
     }
   
-    
+  if (!is.null(plot.group.label)){
+    ts <- data.frame(group = combined[,plot.group.label], x = combined[,plot.x], y = combined[,plot.y])
+    os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
+    os2 <- merge(combined, os, by.x=plot.group.label, by.y = "group")
+    os3<- os2[!duplicated(os2[,plot.group.label]),]
+    p <- p + geom_text(data=os3, aes_string(x = "cx", y = "cy", label = plot.group.label), size = 4, color = "black", fontface = 2) 
+  }
+  
     ### Plot: Plot the names of the n most extreme species
     if(!is.null(plot.nspecies)){
       p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = "Genus"), colour = "black", size = 4)

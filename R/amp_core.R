@@ -96,7 +96,7 @@ amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, p
   colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
   colnames(temp1)[colnames(temp1) == group] <- "var2"
   DT <- data.table(temp1)
-  DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, var2), .SDcols=c("Abundance") ]
+  DT2 <- DT[, lapply(.SD, mean, na.rm=TRUE), by=list(var1, var2), .SDcols=c("Abundance") ]
   temp2 <- data.frame(DT2)
   colnames(temp2)[colnames(temp2) == "var2"] <- group
   colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
@@ -108,27 +108,28 @@ amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, p
   
   if(plot.type == "frequency"){
     temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), Mean = mean(Abundance)*sum(freq))
-    bw <- ifelse(max(temp3$Frequency) > 30, range(temp3$Frequency)/30, 1)
       
     if(weight == T){
       p <- ggplot(data = temp3, aes(x = Frequency, weight = Mean / sum(Mean)*100)) +
-        geom_bar(binwidth = bw) +        
         ylab("Read abundance (%)") +
-        xlab(paste("Frequency (Observed in N", group, "s)"))
+        xlab(paste("Frequency (Observed in N ", group, "s)", sep = ""))
+        if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
+        if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
     }
     
     if(weight == F){
       p <- ggplot(data = temp3, aes(x = Frequency)) +
-        geom_bar(binwidth = bw) +
         ylab("Count") +
         xlab(paste("Frequency (Observed in N ", group, "s)", sep=""))
+        if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
+        if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
     } 
   }
   
   if (plot.type == "core") {
     temp2$Abundance <- temp2$Abundance/scale.seq * 100
     temp2$HA <- ifelse(temp2$Abundance > abund.treshold, 1, 0)
-    temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance)*sum(freq))
+    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance)*sum(freq))
     
     p <- ggplot(data = temp3, aes(x = Frequency, y = freq_HA)) +
       geom_jitter(size = 3, alpha = 0.5) +

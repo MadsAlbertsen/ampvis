@@ -40,11 +40,13 @@ amp_ordinate(data)
   \item{plot.group}{Uses plot.color and groups samples by
   either "chull" or "centroid".}
 
-  \item{plot.group.label}{Add label to the groups (default:
-  F).}
+  \item{plot.group.label}{Add label based on the centroid
+  of the specified group.}
 
-  \item{plot.trajectory}{Connects points based on a sample
+  \item{trajectory}{Connects points based on a sample
   variable e.g. date.}
+
+  \item{trajectory.group}{Split the trajectory by a group.}
 
   \item{envfit.factor}{A vector of factor variables from
   the sample data used for envfit to the model.}
