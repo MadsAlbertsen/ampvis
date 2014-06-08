@@ -18,17 +18,17 @@ amp_rabund(data)
   \item{tax.aggregate}{The taxonomic level that the data
   should be aggregated to (defualt: OTU)}
 
+  \item{tax.add}{Additional taxonomic levels to display for
+  each entry (default: Phylum)}
+
   \item{tax.empty}{Either "remove" OTUs without taxonomic
   information or "rename" with OTU ID (default: rename).}
 
   \item{scale.seq}{The number of sequences in the
-  pre-filtered samples (default: 20000)}
+  pre-filtered samples (default: 10000)}
 
   \item{plot.type}{Either point, boxplot or curve (default:
   boxplot).}
-
-  \item{name2}{A taxonomic level used for naming (default:
-  "Phylum").}
 
   \item{output}{Either plot or complete (default: "plot").}
 }

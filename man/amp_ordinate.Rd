@@ -33,7 +33,10 @@ amp_ordinate(data)
   \item{plot.species}{Plot loadings as points (default: F)}
 
   \item{plot.nspecies}{Plot the n most extreme species with
-  their genus classification (default: 0).}
+  their taxonomic classification (default: 0).}
+
+  \item{plot.nspecies.tax}{Taxonomic level used in
+  plot.nspecies (default: "Genus").}
 
   \item{plot.label}{Label points using a sample variable.}
 

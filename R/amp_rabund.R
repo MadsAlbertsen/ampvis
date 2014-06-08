@@ -9,10 +9,10 @@
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
+#' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either point, boxplot or curve (default: boxplot).
-#' @param name2 A taxonomic level used for naming (default: "Phylum").
 #' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
@@ -27,7 +27,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", name2 = "Phylum", tax.aggregate = "Genus", tax.empty = "rename"){
+amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename"){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -37,47 +37,58 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
+  ## Temporary fix to handle showing just 1 taxonomic level
+  tax.add2 <- "something"
+  if (is.null(tax.add)){
+    tax.add2 <- NULL
+    tax.add <- "Phylum"
+  }
   
+  ## Clean up the taxonomy
+  for ( i in 1:ncol(tax) ){
+    tax[,i] <- as.character(tax[,i])  
+  }
   
-  ## Clean the taxonomy
+  ## Change Proteobacteria to Class level  
   if(tax.clean == T){
-    for ( i in 1:ncol(tax)){
-      tax[,i] <- as.character(tax[,i])  
-    }
-  #### Change Proteobacteria to Class level  
     for (i in 1:nrow(tax)){
       if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == "p__Proteobacteria"){
         tax$Phylum[i] <- tax$Class[i]   
       }
     }
+  }
   
-  #### Remove the greengenes level prefix
-    tax$Phylum <- gsub("p__", "", tax$Phylum)
-    tax$Phylum <- gsub("c__", "", tax$Phylum)
-    tax$Class <- gsub("c__", "", tax$Class)
-    tax$Order <- gsub("o__", "", tax$Order)
-    tax$Family <- gsub("f__", "", tax$Family)
-    tax$Genus <- gsub("g__", "", tax$Genus)
-    tax[is.na(tax)] <- ""
-    if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
+  tax$Phylum <- gsub("p__", "", tax$Phylum)
+  tax$Phylum <- gsub("c__", "", tax$Phylum)
+  tax$Class <- gsub("c__", "", tax$Class)
+  tax$Order <- gsub("o__", "", tax$Order)
+  tax$Family <- gsub("f__", "", tax$Family)
+  tax$Genus <- gsub("g__", "", tax$Genus)
+  tax[is.na(tax)] <- ""
+  if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
   
-  #### Handle empty taxonomic strings
-    if(tax.empty == "rename" & tax.aggregate != "OTU"){  
-      t2 <- tax
-      a1 <- data.frame(OTU = as.character(t2[,"OTU"]), temp = as.character(t2[,tax.aggregate]), OTU1 = as.character(t2[,"OTU"]))
-      a2 <- subset(a1, temp != "")[,1:2]
-      colnames(a2)[2] <- tax.aggregate 
-      a3 <- subset(a1, temp == "")[,c(1,3)]
-      colnames(a3)[2] <- tax.aggregate
-      a4 <- rbind(a2, a3)
-      a5 <- t2[ , -which(names(t2) %in% tax.aggregate)]      
-      a7 <- join(a5, a4, by = "OTU")
-      tax <- a7
+  ## How to handle empty taxonomic assignments
+  if(tax.empty == "rename"){
+    tax[tax$Phylum == "","Phylum"] <- "Unclassified"
+    for (i in 1:nrow(tax)) {
+      if (tax[i,"Species"] == "" | is.null(tax$Species)) {
+        if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
+          if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
+            if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
+              if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
+                if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+              }
+            }
+          }
+        }
+      }
+      tax[i,tax[i,] == ""] <- rn
     }
-    if(tax.empty == "remove"){
-      tax <- subset(tax, tax[,tax.aggregate] != "")
-      abund <- subset(abund, rownames(abund) %in% rownames(tax))
-    }
+  }
+  
+  if(tax.empty == "remove"){
+    tax <- subset(tax, tax[,tax.aggregate] != "")
+    abund <- subset(abund, rownames(abund) %in% rownames(tax))
   }
   
   ## Merge the taxonomic and abundance information
@@ -96,7 +107,7 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   
   ## Summarise to specific taxonomic levels and groups using data.table for blazing speed
   colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
-  colnames(temp1)[colnames(temp1) == name2] <- "var2"
+  colnames(temp1)[colnames(temp1) == tax.add] <- "var2"
   
   if(group != "Sample"){
     colnames(temp1)[colnames(temp1) == group] <- "var3"
@@ -112,12 +123,12 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   }
   
   colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
-  colnames(temp2)[colnames(temp2) == "var2"] <- name2
+  colnames(temp2)[colnames(temp2) == "var2"] <- tax.add
   
   if (plot.type != "curve"){
   
   ## Subset to X most abundant "OTUs"
-  TotalCounts <- ddply(temp2, c(tax.aggregate,name2), summarise, Abundance = median(Abundance))
+  TotalCounts <- ddply(temp2, c(tax.aggregate,tax.add), summarise, Abundance = median(Abundance))
   TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
   
   ## Make sure we only show a possible number of taxa
@@ -147,9 +158,15 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 20000,
   }
 
   p <- p +
-  coord_flip() +
-  scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, tax.aggregate], TotalCounts[1:tax.show, name2], sep = "; "))) +
+  coord_flip() +  
   ylab("Abundance (%)")
+  
+  if (!is.null(tax.add2)){
+    p <- p + scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, tax.aggregate], TotalCounts[1:tax.show, tax.add], sep = "; ")))
+  } else {
+    p <- p + scale_x_discrete(labels = rev(TotalCounts[1:tax.show, tax.aggregate]))
+  }
+    
   
   if (plot.type == "point"){
     p <- p + geom_point()

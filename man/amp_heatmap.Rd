@@ -20,6 +20,9 @@ amp_headtmap(data)
   \item{tax.aggregate}{The taxonomic level that the data
   should be aggregated to (defualt: Phylum)}
 
+  \item{tax.add}{Additional taxonomic levels to display for
+  each entry e.g. "Phylum" (default: none)}
+
   \item{tax.show}{The number of taxa to show or a vector of
   taxa names (default: 10).}
 
@@ -36,13 +39,13 @@ amp_headtmap(data)
   by.}
 
   \item{plot.numbers}{Plot the values on the heatmap
-  (default: T)}
+  (default: F)}
 
   \item{plot.breaks}{A vector of breaks for the abundance
   legend.}
 
   \item{scale.seq}{The number of sequences in the
-  pre-filtered samples (default: 20000)}
+  pre-filtered samples (default: 10000)}
 
   \item{output}{To output a plot or the complete data
   inclusive dataframes (default: plot)}

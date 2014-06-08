@@ -9,7 +9,7 @@
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
 #' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 20000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either core or frequency (default: frequency).
 #' @param weight Weight the frequency by abundance (default: T).
 #' @param abund.treshold Treshold for considering something abundant in percent (default: 0.1).
@@ -27,7 +27,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_core <- function(data, group = "Sample", scale.seq = 20000, tax.clean = T, plot.type = "frequency", plot.log = F, output = "plot",  tax.aggregate = "OTU", tax.empty = "rename", weight = T, abund.treshold = 0.1){
+amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.clean = T, plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", tax.empty = "rename", weight = T, abund.treshold = 0.1){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))

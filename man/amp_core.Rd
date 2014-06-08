@@ -20,7 +20,7 @@ amp_core(data)
   information or "rename" with OTU ID (default: rename).}
 
   \item{scale.seq}{The number of sequences in the
-  pre-filtered samples (default: 20000)}
+  pre-filtered samples (default: 10000)}
 
   \item{plot.type}{Either core or frequency (default:
   frequency).}
