@@ -34,6 +34,7 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
   tax<-as.data.frame(tax_table(data))
   sample <- suppressWarnings(data.frame(sample_data(data)))
   tax <- data.frame(tax, OTU = rownames(tax))
+  if (is.null(tax$Species)){tax$Species <- ""}      
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
@@ -70,18 +71,18 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
   ## How to handle empty taxonomic assignments
   if(tax.empty == "rename"){
     tax[tax$Phylum == "","Phylum"] <- "Unclassified"
-    for (i in 1:nrow(tax)) {
-      if (tax[i,"Species"] == "" | is.null(tax$Species)) {
-        if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
-          if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
-            if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
-              if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
-                if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+    for (i in 1:nrow(tax)) {   
+        if (tax[i,"Species"] == "") {
+          if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
+            if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
+              if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
+                if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
+                  if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+                }
               }
-            }
-          }
-        }
-      }
+           }
+         }
+       }
       tax[i,tax[i,] == ""] <- rn
     }
   }

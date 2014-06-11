@@ -5,6 +5,15 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.2.1
+#### Bugfixes
+  - amp_heatmap: didn't handle datasets without genus level classification proberly.
+  - amp_rabund: didn't handle datasets without genus level classification proberly.
+
+### 1.2.0
+#### Enhancements
+ - amp_heatmap: Now supports transformation ("log" or "sqrt") of the background color using the variable plot.colorscale.
+
 ### 1.1.0
 #### Enhancements
  - General: 10.000 sequences is now the default vaule of scale.seq.

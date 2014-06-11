@@ -17,6 +17,7 @@
 #' @param order.y A sample or vector to order the y-axis by.
 #' @param plot.numbers Plot the values on the heatmap (default: F)
 #' @param plot.breaks A vector of breaks for the abundance legend.
+#' @param plot.colorscale Either sqrt or log (default: "sqrt")
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param output To output a plot or the complete data inclusive dataframes (default: plot)
 #' 
@@ -31,13 +32,14 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T){
+amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
   tax <- as.data.frame(tax_table(data))
   tax <- data.frame(tax, OTU = rownames(tax))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
+  if (is.null(tax$Species)){tax$Species <- ""}
   
   ## Extract group information
   if (!is.null(group)){
@@ -82,17 +84,17 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   if(tax.empty == "rename"){
     tax[tax$Phylum == "","Phylum"] <- "Unclassified"
     for (i in 1:nrow(tax)) {
-      if (tax[i,"Species"] == "" | is.null(tax$Species)) {
-        if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
-          if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
-            if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
-              if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
-                if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+        if (tax[i,"Species"] == "") {
+          if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
+            if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
+              if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
+                if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
+                  if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+                }
               }
             }
           }
         }
-      }
       tax[i,tax[i,] == ""] <- rn
     }
   }
@@ -241,10 +243,10 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
     p <- p + geom_text(data = abund8, size = 4, colour = "grey30")  
   }
   if (is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = "sqrt")
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale)
   }
   if (!is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = "sqrt", breaks=plot.breaks)
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks)
   }
   if (is.null(normalise)){
     p <- p + labs(x = "", y = "", fill = "Abundance")  

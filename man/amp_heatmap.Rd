@@ -44,6 +44,9 @@ amp_headtmap(data)
   \item{plot.breaks}{A vector of breaks for the abundance
   legend.}
 
+  \item{plot.colorscale}{Either sqrt or log (default:
+  "sqrt")}
+
   \item{scale.seq}{The number of sequences in the
   pre-filtered samples (default: 10000)}
 
