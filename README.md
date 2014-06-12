@@ -5,6 +5,11 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.3.1
+#### Bugfixes
+ - amp_rabund: Fixed small error when OTUs was missing Phylum level assignment.
+ - amp_heatmap: Fixed small error when OTUs was missing Phylum level assignment.
+
 ### 1.3.0
 #### Enhancements
  - amp_rabund: You can now order groups using the variable group.order.

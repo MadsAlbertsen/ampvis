@@ -59,7 +59,7 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
       }
     }
   }
-  
+  tax$Kingdom <- gsub("k__", "", tax$Kingdom)
   tax$Phylum <- gsub("p__", "", tax$Phylum)
   tax$Phylum <- gsub("c__", "", tax$Phylum)
   tax$Class <- gsub("c__", "", tax$Class)
@@ -69,16 +69,20 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
   tax[is.na(tax)] <- ""
   if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
   
+  t <- tax
+  
   ## How to handle empty taxonomic assignments
   if(tax.empty == "rename"){
-    tax[tax$Phylum == "","Phylum"] <- "Unclassified"
+    tax[tax$Kingdom == "","Kingdom"] <- "Unclassified"
     for (i in 1:nrow(tax)) {   
         if (tax[i,"Species"] == "") {
           if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
             if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
               if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
                 if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
-                  if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") }
+                  if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") } else{
+                    if (tax[i,"Kingdom"] != "") { rn <- paste("k__", tax[i,"Kingdom"], "_", tax[i,"OTU"], sep = "") } 
+                  }
                 }
               }
            }
