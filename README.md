@@ -5,6 +5,13 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.3.0
+#### Enhancements
+ - amp_rabund: You can now order groups using the variable group.order.
+
+#### Bugfixes
+ - amp_rabund: Fixed error when trying to display Phylum only information.
+
 ### 1.2.1
 #### Bugfixes
   - amp_heatmap: didn't handle datasets without genus level classification proberly.

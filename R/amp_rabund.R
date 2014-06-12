@@ -6,6 +6,7 @@
 #'
 #' @param data (required) A phyloseq object.
 #' @param group Group the data based on a sample variable.
+#' @param order.group A vector defining the order of groups.
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
@@ -27,7 +28,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename"){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -42,7 +43,7 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
   tax.add2 <- "something"
   if (is.null(tax.add)){
     tax.add2 <- NULL
-    tax.add <- "Phylum"
+    tax.add <- "Kingdom"
   }
   
   ## Clean up the taxonomy
@@ -155,12 +156,16 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
     p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance"))   
   }
   if (group != "Sample"){
+    if(!is.null(order.group)){
+      abund4[,group] <- factor(abund4[,group], levels = rev(order.group))
+    }
     p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance", color = group))   
   }
 
   p <- p +
   coord_flip() +  
-  ylab("Abundance (%)")
+  ylab("Abundance (%)") + 
+  guides(col = guide_legend(reverse = TRUE))
   
   if (!is.null(tax.add2)){
     p <- p + scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, tax.aggregate], TotalCounts[1:tax.show, tax.add], sep = "; ")))
@@ -170,7 +175,7 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
     
   
   if (plot.type == "point"){
-    p <- p + geom_point()
+    p <- p + geom_point() 
   }
   if (plot.type == "boxplot"){
     p <- p + geom_boxplot()
@@ -190,6 +195,10 @@ amp_rabund <- function(data, group = "Sample", tax.show = 50, scale.seq = 10000,
       temp3 <- temp3[with(temp3, order(-Mean)),]
       test <- ddply(temp3, group, transform , dummy = 1)
       TotalCounts <- ddply(test, group, transform, Cumsum = cumsum(Mean), Rank = cumsum(dummy))
+      if(!is.null(order.group)){
+        TotalCounts[,group] <- factor(TotalCounts[,group], levels = rev(order.group))
+      }
+      
       p <- ggplot(data = TotalCounts, aes_string(x = "Rank", y = "Cumsum", color = group)) +
         geom_line(size = 2) +
         ylim(0,100) +
