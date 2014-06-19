@@ -5,6 +5,7 @@
 #' @usage amp_ordinate(data)
 #'
 #' @param data (required) A phyloseq object including sample data.
+#' @param scale A variable from the associated sample data to scale the abundance by.
 #' @param trans Transform the raw counts, currently supports "none" or "sqrt" (default: "sqrt").
 #' @param ordinate.type Either PCA or NMDS (default: "PCA").
 #' @param constrain Constrain the PCA by a sample variable.
@@ -12,6 +13,7 @@
 #' @param plot.x Variable to plot on the x-axis if using PCA (default: "PC1")
 #' @param plot.y Variable to plot on the y-axis if using PCA (default: "PC2")
 #' @param plot.color Color the points by a sample variable.
+#' @param plot.color.order Order the groups used for coloring by a vector.
 #' @param plot.point.size Size of the plotted sample points (default: 3)
 #' @param plot.species Plot loadings as points (default: F)
 #' @param plot.nspecies Plot the n most extreme species with their taxonomic classification (default: 0).
@@ -41,18 +43,23 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory){
   
   ## Load the data and extract relevant dataframes from the phyloseq object
-  
   abund<-as.data.frame(otu_table(data))
   tax<-as.data.frame(tax_table(data))
   sample <- suppressWarnings(as.data.frame(sample_data(data)))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
-  ## Transform the data
   
+  ## Scale the data
+  if (!is.null(scale)){
+    variable <- unlist(sample[,scale])
+    abund <- t(t(abund)*variable)
+  }
+  
+  ## Transform the data
   abund1 <- abund
   if (trans == "sqrt"){
     abund1 <- sqrt(abund)
@@ -131,7 +138,7 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
       if (model$CCA$rank > 1){
         plot.y <- "RDA2"
       }
-      exp <- round(model$CA$eig/model$CA$tot.chi*100,1)
+      exp <- round(model$CA$eig/model$tot.chi*100,1)
       expCCA <- round(model$CCA$eig/model$CA$tot.chi*100,1)
       exp <- c(exp, expCCA)
     }
@@ -187,6 +194,12 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     outlist <- append(outlist, list(efn.model = ef.n))
   }
   
+  ## Order the colors
+  
+  if (!is.null(plot.color.order)) {
+    combined[,plot.color] <- factor(combined[,plot.color], levels = plot.color.order)
+  }
+  
   ## Plot  
   
   ### Plot: Basic plot either with or without colors
@@ -228,6 +241,8 @@ amp_ordinate <- function(data, trans = "sqrt", ordinate.type = "PCA", ncomp = 5,
     
     if (plot.group == "chull"){
       find_hull <- function(df) df[chull(df[,plot.x], df[,plot.y]), ]
+      
+      
       hulls <- ddply(combined, plot.color, find_hull)
       p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
     }

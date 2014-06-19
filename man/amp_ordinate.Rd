@@ -8,6 +8,8 @@ amp_ordinate(data)
 \arguments{
 \item{data}{(required) A phyloseq object including sample data.}
 
+\item{scale}{A variable from the associated sample data to scale the abundance by.}
+
 \item{trans}{Transform the raw counts, currently supports "none" or "sqrt" (default: "sqrt").}
 
 \item{ordinate.type}{Either PCA or NMDS (default: "PCA").}
@@ -21,6 +23,8 @@ amp_ordinate(data)
 \item{plot.y}{Variable to plot on the y-axis if using PCA (default: "PC2")}
 
 \item{plot.color}{Color the points by a sample variable.}
+
+\item{plot.color.order}{Order the groups used for coloring by a vector.}
 
 \item{plot.point.size}{Size of the plotted sample points (default: 3)}
 

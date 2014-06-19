@@ -5,6 +5,14 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.4.0
+#### Enhancements
+ - amp_ordinate: You can now order the colors using "plot.color.order".
+ - amp_ordinate: You can now scale the abundance counts by a sample variable using "scale".
+ 
+#### Bugfixes
+ - amp_ordinate: The displayed constrained variance was not displaying correct. 
+
 ### 1.3.1
 #### Bugfixes
  - amp_rabund: Fixed small error when OTUs was missing Phylum level assignment.
