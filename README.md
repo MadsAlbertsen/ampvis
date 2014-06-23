@@ -5,6 +5,10 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.4.1
+#### Bugfixes
+ - amp_core: Fixed small bug in the reporting of the mean abundance in output data.
+
 ### 1.4.0
 #### Enhancements
  - amp_ordinate: You can now order the colors using "plot.color.order".

@@ -20,11 +20,13 @@ amp_rabund(data)
 
 \item{tax.add}{Additional taxonomic levels to display for each entry (default: Phylum)}
 
-\item{tax.empty}{Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).}
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 
 \item{plot.type}{Either point, boxplot or curve (default: boxplot).}
+
+\item{point.size}{Size of points (default: 3).}
 
 \item{output}{Either plot or complete (default: "plot").}
 }

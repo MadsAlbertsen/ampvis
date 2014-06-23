@@ -22,7 +22,7 @@ amp_headtmap(data)
 
 \item{tax.clean}{Replace the phylum Proteobacteria with the respective Classes instead (default: T).}
 
-\item{tax.empty}{Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).}
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).}
 
 \item{order.x}{A taxonomy group or vector to order the x-axis by.}
 
@@ -33,6 +33,10 @@ amp_headtmap(data)
 \item{plot.breaks}{A vector of breaks for the abundance legend.}
 
 \item{plot.colorscale}{Either sqrt or log (default: "sqrt")}
+
+\item{plot.na}{Wether to color missing values with the lowest color in the scale (default: F).}
+
+\item{plot.text.size}{The size of the plotted text (default: 4).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 

@@ -11,9 +11,10 @@
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
 #' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
-#' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
+#' @param tax.empty Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either point, boxplot or curve (default: boxplot).
+#' @param point.size Size of points (default: 3).
 #' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
@@ -28,7 +29,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename", point.size = 3){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -67,11 +68,22 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
   tax$Family <- gsub("f__", "", tax$Family)
   tax$Genus <- gsub("g__", "", tax$Genus)
   tax[is.na(tax)] <- ""
-  if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
+  if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} else {tax$Species <- ""}
   
   t <- tax
   
   ## How to handle empty taxonomic assignments
+  
+  if (tax.empty == "OTU"){
+    for (i in 1:nrow(tax)) {
+      if (tax[i,"Species"] == "") {tax[i,"Species"] <- tax[i,"OTU"]}
+      if (tax[i,"Genus"] == "") {tax[i,"Genus"] <- tax[i,"OTU"]}
+      if (tax[i,"Family"] == "") {tax[i,"Family"] <- tax[i,"OTU"]}
+      if (tax[i,"Order"] == "") {tax[i,"Order"] <- tax[i,"OTU"]}
+      if (tax[i,"Class"] == "") {tax[i,"Class"] <- tax[i,"OTU"]}
+      if (tax[i,"Phylum"] == "") {tax[i,"Phylum"] <- tax[i,"OTU"]}
+    }
+  }
   if(tax.empty == "rename"){
     tax[tax$Kingdom == "","Kingdom"] <- "Unclassified"
     for (i in 1:nrow(tax)) {   
@@ -179,10 +191,10 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     
   
   if (plot.type == "point"){
-    p <- p + geom_point() 
+    p <- p + geom_point(size = point.size) 
   }
   if (plot.type == "boxplot"){
-    p <- p + geom_boxplot()
+    p <- p + geom_boxplot(outlier.size = point.size)
   }
   if (plot.log ==T){
    p <- p + scale_y_log10() 

@@ -107,7 +107,7 @@ amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.clean = T, p
   ## Make a nice frequency plot
   
   if(plot.type == "frequency"){
-    temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), Mean = mean(Abundance)*sum(freq))
+    temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), Mean = mean(Abundance))
       
     if(weight == T){
       p <- ggplot(data = temp3, aes(x = Frequency, weight = Mean / sum(Mean)*100)) +
@@ -129,7 +129,7 @@ amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.clean = T, p
   if (plot.type == "core") {
     temp2$Abundance <- temp2$Abundance/scale.seq * 100
     temp2$HA <- ifelse(temp2$Abundance > abund.treshold, 1, 0)
-    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance)*sum(freq))
+    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance))
     
     p <- ggplot(data = temp3, aes(x = Frequency, y = freq_HA)) +
       geom_jitter(size = 3, alpha = 0.5) +

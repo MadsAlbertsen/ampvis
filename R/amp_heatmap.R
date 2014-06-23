@@ -12,12 +12,14 @@
 #' @param tax.add Additional taxonomic levels to display for each entry e.g. "Phylum" (default: none) 
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
-#' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
+#' @param tax.empty Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
 #' @param plot.numbers Plot the values on the heatmap (default: F)
 #' @param plot.breaks A vector of breaks for the abundance legend.
 #' @param plot.colorscale Either sqrt or log (default: "sqrt")
+#' @param plot.na Wether to color missing values with the lowest color in the scale (default: F).
+#' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param output To output a plot or the complete data inclusive dataframes (default: plot)
 #' 
@@ -32,7 +34,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T){
+amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.clean = T, tax.empty = "rename", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T,plot.text.size = 4){
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -40,6 +42,8 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   tax <- data.frame(tax, OTU = rownames(tax))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   if (is.null(tax$Species)){tax$Species <- ""}
+  
+  if(plot.na == F){ plot.na <- "grey50" }else{ plot.na <-"#EF8A62" }
   
   ## Extract group information
   if (!is.null(group)){
@@ -84,6 +88,17 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   t <- tax
   
   ## How to handle empty taxonomic assignments
+  if (tax.empty == "OTU"){
+    for (i in 1:nrow(tax)) {
+      if (tax[i,"Species"] == "") {tax[i,"Species"] <- tax[i,"OTU"]}
+      if (tax[i,"Genus"] == "") {tax[i,"Genus"] <- tax[i,"OTU"]}
+      if (tax[i,"Family"] == "") {tax[i,"Family"] <- tax[i,"OTU"]}
+      if (tax[i,"Order"] == "") {tax[i,"Order"] <- tax[i,"OTU"]}
+      if (tax[i,"Class"] == "") {tax[i,"Class"] <- tax[i,"OTU"]}
+      if (tax[i,"Phylum"] == "") {tax[i,"Phylum"] <- tax[i,"OTU"]}
+    }
+  }
+  
   if(tax.empty == "rename"){
     tax[tax$Kingdom == "","Kingdom"] <- "Unclassified"
     for (i in 1:nrow(tax)) {   
@@ -245,13 +260,13 @@ amp_heatmap <- function(data, group = NULL, normalise = NULL, scale = NULL, tax.
   if (plot.numbers == T){
     abund8 <- abund7
     abund8$Abundance <- round(abund8$Abundance, 1)
-    p <- p + geom_text(data = abund8, size = 4, colour = "grey30")  
+    p <- p + geom_text(data = abund8, size = plot.text.size, colour = "grey10")  
   }
   if (is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale)
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, na.value=plot.na)
   }
   if (!is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks)
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na)
   }
   if (is.null(normalise)){
     p <- p + labs(x = "", y = "", fill = "Abundance")  
