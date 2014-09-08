@@ -12,9 +12,11 @@
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
 #' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
 #' @param tax.empty Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).
+#' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either point, boxplot or curve (default: boxplot).
-#' @param point.size Size of points (default: 3).
+#' @param plot.flip Flip the axis of the plot (default: F).
+#' @param point.size Size of points (default: 2).
 #' @param output Either plot or complete (default: "plot").
 #' 
 #' @return A ggplot2 object
@@ -29,223 +31,125 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "rename", point.size = 3){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F){
+  
+  ## Rename and clean the taxonomy
+  data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)  
+  
+  ## Aggregate to a specific taxonomic level
+  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
   
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
-  tax<-as.data.frame(tax_table(data))
+  tax<-data.frame(tax_table(data), OTU = rownames(tax_table(data)))
   sample <- suppressWarnings(data.frame(sample_data(data)))
-  tax <- data.frame(tax, OTU = rownames(tax))
-  if (is.null(tax$Species)){tax$Species <- ""}      
-  
-  outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
-  
-  ## Temporary fix to handle showing just 1 taxonomic level
-  tax.add2 <- "something"
-  if (is.null(tax.add)){
-    tax.add2 <- NULL
-    tax.add <- "Kingdom"
-  }
-  
-  ## Clean up the taxonomy
-  for ( i in 1:ncol(tax) ){
-    tax[,i] <- as.character(tax[,i])  
-  }
-  
-  ## Change Proteobacteria to Class level  
-  if(tax.clean == T){
-    for (i in 1:nrow(tax)){
-      if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == "p__Proteobacteria"){
-        tax$Phylum[i] <- tax$Class[i]   
-      }
+   
+  ## Make a name variable that can be used instead of tax.aggregate to display multiple levels 
+  if (!is.null(tax.add)){
+    if (tax.add != tax.aggregate) {
+      abund2 <- cbind.data.frame(Display = apply(tax[,c(tax.add,tax.aggregate)], 1, paste, collapse="; "), abund)
     }
-  }
-  tax$Kingdom <- gsub("k__", "", tax$Kingdom)
-  tax$Phylum <- gsub("p__", "", tax$Phylum)
-  tax$Phylum <- gsub("c__", "", tax$Phylum)
-  tax$Class <- gsub("c__", "", tax$Class)
-  tax$Order <- gsub("o__", "", tax$Order)
-  tax$Family <- gsub("f__", "", tax$Family)
-  tax$Genus <- gsub("g__", "", tax$Genus)
-  tax[is.na(tax)] <- ""
-  if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} else {tax$Species <- ""}
+  } else {
+    abund2 <- cbind.data.frame(Display = tax[,tax.aggregate], abund)
+  }  
   
-  t <- tax
+  ## Convert to long format 
+  abund3 <- melt(abund2, id.var = "Display", value.name= "Abundance", variable.name = "Sample")  
   
-  ## How to handle empty taxonomic assignments
-  
-  if (tax.empty == "OTU"){
-    for (i in 1:nrow(tax)) {
-      if (tax[i,"Species"] == "") {tax[i,"Species"] <- tax[i,"OTU"]}
-      if (tax[i,"Genus"] == "") {tax[i,"Genus"] <- tax[i,"OTU"]}
-      if (tax[i,"Family"] == "") {tax[i,"Family"] <- tax[i,"OTU"]}
-      if (tax[i,"Order"] == "") {tax[i,"Order"] <- tax[i,"OTU"]}
-      if (tax[i,"Class"] == "") {tax[i,"Class"] <- tax[i,"OTU"]}
-      if (tax[i,"Phylum"] == "") {tax[i,"Phylum"] <- tax[i,"OTU"]}
+  ## Add group information
+  if (group != "Sample"){
+    if (length(group) > 1){
+      grp <- data.frame(Sample = rownames(sample), Group = apply(sample[,group], 1, paste, collapse = " ")) 
+    } else{
+      grp <- data.frame(Sample = rownames(sample), Group = sample[,group]) 
     }
-  }
-  if(tax.empty == "rename"){
-    tax[tax$Kingdom == "","Kingdom"] <- "Unclassified"
-    for (i in 1:nrow(tax)) {   
-        if (tax[i,"Species"] == "") {
-          if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", tax[i,"OTU"], sep = "") } else{
-            if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", tax[i,"OTU"], sep = "") } else{
-              if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", tax[i,"OTU"], sep = "") } else{
-                if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", tax[i,"OTU"], sep = "") } else{
-                  if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", tax[i,"OTU"], sep = "") } else{
-                    if (tax[i,"Kingdom"] != "") { rn <- paste("k__", tax[i,"Kingdom"], "_", tax[i,"OTU"], sep = "") } 
-                  }
-                }
-              }
-           }
-         }
-       }
-      tax[i,tax[i,] == ""] <- rn
-    }
-  }
-  
-  if(tax.empty == "remove"){
-    tax <- subset(tax, tax[,tax.aggregate] != "")
-    abund <- subset(abund, rownames(abund) %in% rownames(tax))
-  }
-  
-  ## Merge the taxonomic and abundance information
-  
-  abund2 <- cbind.data.frame(tax, abund)
-  
-  ## Melt data to long format
-  abund3 <- melt(abund2, id.var = c(colnames(tax)), measure.vars=rownames(sample))
-  colnames(abund3)[ncol(abund3)] <- "Abundance" 
-  colnames(abund3)[ncol(abund3)-1] <- "Sample" 
-  colnames(sample)[1] <- "Sample"
-  
-  ## Merge sample data
-  temp1 <- join(x = abund3, y = data.frame(sample), by = "Sample")
-  
-  
-  ## Summarise to specific taxonomic levels and groups using data.table for blazing speed
-  colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
-  colnames(temp1)[colnames(temp1) == tax.add] <- "var2"
-  
-  if(group != "Sample"){
-    colnames(temp1)[colnames(temp1) == group] <- "var3"
-    DT <- data.table(temp1)
-    DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, var2, var3, Sample), .SDcols=c("Abundance") ]
-    temp2 <- data.frame(DT2)
-    colnames(temp2)[colnames(temp2) == "var3"] <- group
-  }
-  if(group == "Sample"){
-    DT <- data.table(temp1)
-    DT2 <- DT[, lapply(.SD, sum, na.rm=TRUE), by=list(var1, var2, Sample), .SDcols=c("Abundance") ]
-    temp2 <- data.frame(DT2)
-  }
-  
-  colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
-  colnames(temp2)[colnames(temp2) == "var2"] <- tax.add
+    abund5 <- join(x = abund3, y = grp, by = "Sample")
+  } else{ 
+    abund5 <- data.frame(abund3, Group = abund3$Sample)
+  } 
   
   if (plot.type != "curve"){
-  
-  ## Subset to X most abundant "OTUs"
-  TotalCounts <- ddply(temp2, c(tax.aggregate,tax.add), summarise, Abundance = median(Abundance))
-  TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
-  
-  ## Make sure we only show a possible number of taxa
-  if (is.numeric(tax.show)){
-    if (tax.show > nrow(TotalCounts)){
+    ## Find the X most abundant levels and sort
+    TotalCounts <- ddply(abund5, ~Display, summarise, Abundance = sum(Abundance))
+    TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
+    abund5$Display <- factor(abund5$Display, levels = rev(TotalCounts$Display))
+    
+    ## Make sure we only show a possible number of taxa
+    if (!is.numeric(tax.show)){
       tax.show <- nrow(TotalCounts)
     }
-  }
-  if (!is.numeric(tax.show)){
-    tax.show <- nrow(TotalCounts)
-  }
     
-  abund4 <- subset(temp2, temp2[, tax.aggregate] %in% TotalCounts[1:tax.show, tax.aggregate])
-  abund4 <- droplevels(abund4)
-  abund4[,tax.aggregate] <- factor(abund4[, tax.aggregate], levels = rev(TotalCounts[1:tax.show, tax.aggregate])) 
+    ## Subset to X most abundant levels
+    if (is.numeric(tax.show)){
+      if (tax.show > nrow(TotalCounts)){  
+        tax.show <- nrow(TotalCounts)
+      }
+      abund7 <- subset(abund5, abund5$Display %in% TotalCounts[1:tax.show,"Display"])  
+    }
   
-  ## Scale to a specific abundance
-  abund4$Abundance <- abund4$Abundance/scale.seq*100
+    ## Subset to a list of level names
+    if (!is.numeric(tax.show)){
+      if (tax.show != "all"){
+        abund7 <- subset(abund5, abund5$Display %in% tax.show)    
+      }
+    ### Or just show all  
+      if (tax.show == "all"){
+        tax.show <- nrow(TotalCounts)  
+        abund7 <- subset(abund5, abund5$Display %in% TotalCounts[1:tax.show,"Display"])  
+      }
+    }
+  
+    ## Scale to a specific abundance
+    abund7$Abundance <- abund7$Abundance/scale.seq*100
 
     ## plot the data
   
-  if (group == "Sample"){
-    p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance"))   
-  }
-  if (group != "Sample"){
-    if(!is.null(order.group)){
-      abund4[,group] <- factor(abund4[,group], levels = rev(order.group))
+    if (group == "Sample"){
+      p <-ggplot(abund7, aes(x = Display, y = Abundance))   
     }
-    p <-ggplot(abund4, aes_string(x = tax.aggregate, y = "Abundance", color = group))   
-  }
+    if (group != "Sample"){
+      if(!is.null(order.group)){
+        abund7$Group <- factor(abund7$Group, levels = rev(order.group))
+      }
+      p <-ggplot(abund7, aes(x = Display, y = Abundance, color = Group))   
+    }
 
-  p <- p +
-  coord_flip() +  
-  ylab("Abundance (%)") + 
-  guides(col = guide_legend(reverse = TRUE))
+    p <- p +  ylab("Read Abundance (%)") + guides(col = guide_legend(reverse = TRUE))
   
-  if (!is.null(tax.add2)){
-    p <- p + scale_x_discrete(labels = rev(paste(TotalCounts[1:tax.show, tax.aggregate], TotalCounts[1:tax.show, tax.add], sep = "; ")))
-  } else {
-    p <- p + scale_x_discrete(labels = rev(TotalCounts[1:tax.show, tax.aggregate]))
-  }
+    if (plot.flip == F){ p <- p + coord_flip() } else{
+      p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+    }
+  
+    if (plot.type == "point"){ p <- p + geom_point(size = point.size) }
+    if (plot.type == "boxplot"){p <- p + geom_boxplot(outlier.size = point.size)}
+    if (plot.log ==T){ p <- p + scale_y_log10()}
     
-  
-  if (plot.type == "point"){
-    p <- p + geom_point(size = point.size) 
-  }
-  if (plot.type == "boxplot"){
-    p <- p + geom_boxplot(outlier.size = point.size)
-  }
-  if (plot.log ==T){
-   p <- p + scale_y_log10() 
-  }
+    outlist <- list(plot = p, data = abund7)
   }
   
   ## If type = curve then generate a second dataframe
   
   if (plot.type == "curve"){
-    temp2$Abundance <- temp2$Abundance/scale.seq*100
-    
-    if (group != "Sample"){      
-      temp3 <- ddply(temp2, c(tax.aggregate, group), summarise, Mean = mean(Abundance))
-      temp3 <- temp3[with(temp3, order(-Mean)),]
-      test <- ddply(temp3, group, transform , dummy = 1)
-      TotalCounts <- ddply(test, group, transform, Cumsum = cumsum(Mean), Rank = cumsum(dummy))
-      if(!is.null(order.group)){
-        TotalCounts[,group] <- factor(TotalCounts[,group], levels = rev(order.group))
-      }
-      
-      p <- ggplot(data = TotalCounts, aes_string(x = "Rank", y = "Cumsum", color = group)) +
-        geom_line(size = 2) +
-        ylim(0,100) +
-        xlab("Rank abundance") +
-        ylab("Cummulative read abundance (%)")  
-      if (plot.log ==T){
-        p <- p + scale_x_log10() 
-      }  
+    temp3 <- ddply(abund5, c("Display", "Group"), summarise, Mean = mean(Abundance))
+    temp3 <- temp3[with(temp3, order(-Mean)),]
+    test <- ddply(temp3, ~Group, transform , dummy = 1)
+    TotalCounts <- ddply(test, ~Group, transform, Cumsum = cumsum(Mean), Rank = cumsum(dummy))
+    if(!is.null(order.group)){
+      TotalCounts$Group <- factor(TotalCounts$Group, levels = rev(order.group))
     }
+    TotalCounts$Cumsum <- TotalCounts$Cumsum/scale.seq * 100
     
-    if (group == "Sample"){
-      TotalCounts <- ddply(temp2, tax.aggregate, summarise, Mean = mean(Abundance))  
-      TotalCounts <- TotalCounts[with(TotalCounts, order(-Mean)),]      
-      TotalCounts$Cumsum <- cumsum(TotalCounts$Mean)
-      TotalCounts$x <- 1:nrow(TotalCounts)
-      
-      p <- ggplot(data = TotalCounts, aes(x = x, y = Cumsum)) +
-        geom_line(size = 2) +
-        ylim(0,100) +
-        xlab("Rank abundance") +
-        ylab("Cummulative read abundance (%)")  
-        if (plot.log ==T){
-          p <- p + scale_x_log10() 
-        }
+    p <- ggplot(data = TotalCounts, aes(x = Rank, y = Cumsum, color = Group)) +
+      geom_line(size = 2) +
+      ylim(0,100) +
+      xlab("Rank abundance") +
+      ylab("Cummulative read abundance (%)")  
+    if (plot.log ==T){
+      p <- p + scale_x_log10() 
     } 
     
-    abund4 <- TotalCounts
-    
+    outlist <- list(plot = p, data = TotalCounts)
   }
-  
-  outlist <- append(outlist, list(dataframe = abund4, plot = p))
 
   if(output == "complete"){ return(outlist) }
   if(output == "plot"){ return(p) }

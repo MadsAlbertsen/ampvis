@@ -22,11 +22,15 @@ amp_rabund(data)
 
 \item{tax.empty}{Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).}
 
+\item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
+
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 
 \item{plot.type}{Either point, boxplot or curve (default: boxplot).}
 
-\item{point.size}{Size of points (default: 3).}
+\item{plot.flip}{Flip the axis of the plot (default: F).}
+
+\item{point.size}{Size of points (default: 2).}
 
 \item{output}{Either plot or complete (default: "plot").}
 }

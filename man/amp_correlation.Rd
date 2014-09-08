@@ -18,9 +18,11 @@ amp_correlation(data)
 
 \item{treshold.abundance}{Average abundance treshold (default: 0)}
 
+\item{treshold.obs}{Minimum number of observations in order to calculate correlations (default: 10).}
+
 \item{ignore.zero}{Remove observations where 1 obeservation has 0 counts from the correlation test (default: F)}
 
-\item{tax.clean}{Assign best classification to OTUs (default: T).}
+\item{ignore.global.zero}{Remove observations where 1 obeservation has 0 counts from the initial correlation test (default: T)}
 
 \item{label}{Plot taxonomic classifications (e.g. "Genus") instead of points.}
 
@@ -28,9 +30,17 @@ amp_correlation(data)
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 20000)}
 
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).}
+
+\item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
+
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: OTU).}
+
 \item{scale.size}{Scale the size of the plotted objects (default: 1)}
 
 \item{output}{Either plot or complete (default: "plot").}
+
+\item{alpha}{Transparency of the plotted points (default: 1).}
 }
 \value{
 A ggplot2 object

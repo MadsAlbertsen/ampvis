@@ -3,7 +3,7 @@ Type: Package
 Title: Tools for visualising amplicon data
 Description: ampvis is a small set of tools that allows effortless
     visualisation of amplicon data
-Version: 1.4.1
+Version: 1.6.0
 Date: 2014-06-16
 Author: Mads Albertsen
 Maintainer: Mads Albertsen <MadsAlbertsen85@gmail.com>
@@ -19,4 +19,7 @@ Depends:
     igraph,
     RColorBrewer,
     Biostrings,
-    data.table
+    data.table,
+    DESeq2,
+    ggdendro,
+    stringr

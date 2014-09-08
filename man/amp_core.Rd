@@ -10,11 +10,11 @@ amp_core(data)
 
 \item{group}{Group the data based on a sample variable (default: "Sample").}
 
-\item{tax.clean}{Replace the phylum Proteobacteria with the respective Classes instead (default: T).}
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).}
 
-\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (defualt: OTU)}
+\item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
 
-\item{tax.empty}{Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).}
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: OTU).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 

@@ -5,6 +5,10 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.5.0
+#### Enhancements
+ - amp_rabund: You can now flip the axis using plot.flip = T.
+
 ### 1.4.1
 #### Bugfixes
  - amp_core: Fixed small bug in the reporting of the mean abundance in output data.

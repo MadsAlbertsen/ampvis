@@ -6,9 +6,9 @@
 #'
 #' @param data (required) A phyloseq object.
 #' @param group Group the data based on a sample variable (default: "Sample").
-#' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
-#' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
-#' @param tax.empty Either "remove" OTUs without taxonomic information or "rename" with OTU ID (default: rename).
+#' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
+#' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
+#' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: OTU).
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either core or frequency (default: frequency).
 #' @param weight Weight the frequency by abundance (default: T).
@@ -27,57 +27,21 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.clean = T, plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", tax.empty = "rename", weight = T, abund.treshold = 0.1){
+amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL, tax.empty = "best", plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", weight = T, abund.treshold = 0.1){
   
+  ## Clean up the taxonomy
+  data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
+  
+  ## Aggregate to a specific taxonomic level
+  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
+    
   ## Extract all data from the phyloseq object
   abund<-as.data.frame(otu_table(data))
-  tax<-as.data.frame(tax_table(data))
+  tax <- data.frame(tax_table(data), OTU = rownames(tax_table(data)))
   sample <- suppressWarnings(data.frame(sample_data(data)))
-  tax <- data.frame(tax, OTU = rownames(tax))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
-  
-  ## Clean the taxonomy
-  if(tax.clean == T){
-    for ( i in 1:ncol(tax)){
-      tax[,i] <- as.character(tax[,i])  
-    }
-    #### Change Proteobacteria to Class level  
-    for (i in 1:nrow(tax)){
-      if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == "p__Proteobacteria"){
-        tax$Phylum[i] <- tax$Class[i]   
-      }
-    }
     
-    #### Remove the greengenes level prefix
-    tax$Phylum <- gsub("p__", "", tax$Phylum)
-    tax$Phylum <- gsub("c__", "", tax$Phylum)
-    tax$Class <- gsub("c__", "", tax$Class)
-    tax$Order <- gsub("o__", "", tax$Order)
-    tax$Family <- gsub("f__", "", tax$Family)
-    tax$Genus <- gsub("g__", "", tax$Genus)
-    tax[is.na(tax)] <- ""
-    if (!is.null(tax$Species)){tax$Species <- gsub("s__", "", tax$Species)} 
-    
-    #### Handle empty taxonomic strings
-    if(tax.empty == "rename" & tax.aggregate != "OTU"){  
-      t2 <- tax
-      a1 <- data.frame(OTU = as.character(t2[,"OTU"]), temp = as.character(t2[,tax.aggregate]), OTU1 = as.character(t2[,"OTU"]))
-      a2 <- subset(a1, temp != "")[,1:2]
-      colnames(a2)[2] <- tax.aggregate 
-      a3 <- subset(a1, temp == "")[,c(1,3)]
-      colnames(a3)[2] <- tax.aggregate
-      a4 <- rbind(a2, a3)
-      a5 <- t2[ , -which(names(t2) %in% tax.aggregate)]      
-      a7 <- join(a5, a4, by = "OTU")
-      tax <- a7
-    }
-    if(tax.empty == "remove"){
-      tax <- subset(tax, tax[,tax.aggregate] != "")
-      abund <- subset(abund, rownames(abund) %in% rownames(tax))
-    }
-  }
-  
   ## Merge the taxonomic and abundance information
   
   abund2 <- cbind.data.frame(tax, abund)

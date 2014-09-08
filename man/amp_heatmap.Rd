@@ -20,9 +20,9 @@ amp_headtmap(data)
 
 \item{tax.show}{The number of taxa to show or a vector of taxa names (default: 10).}
 
-\item{tax.clean}{Replace the phylum Proteobacteria with the respective Classes instead (default: T).}
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).}
 
-\item{tax.empty}{Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).}
+\item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
 
 \item{order.x}{A taxonomy group or vector to order the x-axis by.}
 

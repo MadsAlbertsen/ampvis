@@ -21,13 +21,14 @@
 #' @param plot.label Label points using a sample variable.
 #' @param plot.group Uses plot.color and groups samples by either "chull" or "centroid".
 #' @param plot.group.label Add label based on the centroid of the specified group.
+#' @param plot.group.label.size Text size of the labels.
 #' @param trajectory Connects points based on a sample variable e.g. date.
 #' @param trajectory.group Split the trajectory by a group.
 #' @param envfit.factor A vector of factor variables from the sample data used for envfit to the model.
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
 #' @param envfit.resize Scale the size of the numeric arrows (default: 1).
-#' @param tax.clean Add best assignment to Genus level classification if none exists.
+#' @param tax.empty Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).
 #' @param scale.species Rescale the plotted loadings to maximise visability (default: F).
 #' @param output Either plot or complete (default: "plot").
 #' 
@@ -43,7 +44,10 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.clean =T, output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4){
+  
+  ## Clean up the taxonomy
+  data <- amp_rename(data = data, tax.empty = tax.empty)  
   
   ## Load the data and extract relevant dataframes from the phyloseq object
   abund<-as.data.frame(otu_table(data))
@@ -51,7 +55,6 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   sample <- suppressWarnings(as.data.frame(sample_data(data)))
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
-  
   
   ## Scale the data
   if (!is.null(scale)){
@@ -63,32 +66,6 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   abund1 <- abund
   if (trans == "sqrt"){
     abund1 <- sqrt(abund)
-  }
-  
-  ## Clean taxonomic names by assigning the best classification to genus
-  
-  if (tax.clean == T){
-    t <- tax
-    t$Kingdom <- as.character(t$Kingdom)
-    t$Phylum <- as.character(t$Phylum)
-    t$Class <- as.character(t$Class)
-    t$Order <- as.character(t$Order)
-    t$Family <- as.character(t$Family)
-    t$Genus <- as.character(t$Genus)
-    t[is.na(t$Phylum),"Phylum"] <- "p__Unclassified"
-    a <- which( colnames(t)=="Class")
-    for (i in 1:nrow(t)){
-      if (t[i,a-1] == "p__"){t[i,a-1] <- "p__Unclassified"}
-      if (is.na(t[i,a])){t[i,a] <- t[i, a-1]}
-      if (t[i,a] == "c__"){t[i,a] <- t[i, a-1]}
-      if (is.na(t[i,a+1])){t[i,a+1] <- t[i, a]}
-      if (t[i,a+1] == "o__"){t[i,a+1] <- t[i, a]}
-      if (is.na(t[i,a+2])){t[i,a+2] <- t[i, a+1]}
-      if (t[i,a+2] == "f__"){t[i,a+2] <- t[i, a+1]}
-      if (is.na(t[i,a+3])){t[i,a+3] <- t[i, a+2]}  
-      if (t[i,a+3] == "g__"){t[i,a+3] <- t[i, a+2]}
-    }  
-    tax <-t  
   }
   
   ## Calculate NMDS
@@ -253,7 +230,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
     os2 <- merge(combined, os, by.x=plot.group.label, by.y = "group")
     os3<- os2[!duplicated(os2[,plot.group.label]),]
-    p <- p + geom_text(data=os3, aes_string(x = "cx", y = "cy", label = plot.group.label), size = 4, color = "black", fontface = 2) 
+    p <- p + geom_text(data=os3, aes_string(x = "cx", y = "cy", label = plot.group.label), size = plot.group.label.size , color = "black", fontface = 2) 
   }
   
   ### Plot: Plot the names of the n most extreme species

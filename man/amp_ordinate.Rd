@@ -40,6 +40,8 @@ amp_ordinate(data)
 
 \item{plot.group.label}{Add label based on the centroid of the specified group.}
 
+\item{plot.group.label.size}{Text size of the labels.}
+
 \item{trajectory}{Connects points based on a sample variable e.g. date.}
 
 \item{trajectory.group}{Split the trajectory by a group.}
@@ -52,7 +54,7 @@ amp_ordinate(data)
 
 \item{envfit.resize}{Scale the size of the numeric arrows (default: 1).}
 
-\item{tax.clean}{Add best assignment to Genus level classification if none exists.}
+\item{tax.empty}{Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).}
 
 \item{scale.species}{Rescale the plotted loadings to maximise visability (default: F).}
 
