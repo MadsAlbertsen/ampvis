@@ -39,15 +39,20 @@
 amp_correlation <- function(data, trans = "none", treshold.cor = 0.8, treshold.pval = 0.01, tax.clean = T, ignore.zero = F, ignore.global.zero = T, scale.seq = 20000, treshold.abundance = 0, treshold.obs = 10, label = NULL, scale.abundance = F, output = "plot", treshold.count = 10, scale.size = 1, tax.class = NULL, tax.empty = "best", tax.aggregate = "OTU", alpha = 1){
   
   print("Loading, cleaning and transforming the data")
+  ## Load the data. If phyloseq object it should be converted to a list of data.frames
+  if (!is.list(data)){ 
+    data <- list(abund = as.data.frame(otu_table(data)),
+                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
+                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+  }
+  
   ## Clean up the taxonomy
-  data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
+  data <- amp_rename(data = data, tax.empty = tax.empty)
   
-  ## Aggregate to a specific taxonomic level
-  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
-  
-  abund<-as.data.frame(otu_table(data))
-  tax <- data.frame(tax_table(data), OTU = rownames(tax_table(data)))
-  sample <- suppressWarnings(data.frame(sample_data(data)))
+  ## Extract the data into seperate objects for readability
+  abund <- data[["abund"]]  
+  tax <- data[["tax"]]
+  sample <- data[["sample"]]
   
   ## Transform the data
   

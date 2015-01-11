@@ -21,7 +21,7 @@
 #' 
 #' @export
 #' @import ggplot2
-#' @import plyr
+#' @import dplyr
 #' @import reshape2
 #' @import phyloseq
 #' @import grid
@@ -31,12 +31,16 @@
 
 amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.display = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", scale.seq = 10000, label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2){
   
+  
   ## Clean the taxonomy  
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
   
   ## Aggregate to a specific taxonomic level
   if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
     
+  
+  
+  
   ## Convert to DESeq2 object
   groupF <- as.formula(paste("~", group, sep=""))
   data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)

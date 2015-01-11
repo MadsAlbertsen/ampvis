@@ -13,14 +13,14 @@
 #' 
 #' @export
 #' @import phyloseq
+#' @import dplyr
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
 amp_rename <- function(data, tax.class = NULL, tax.empty = "best", tax.level = "Genus"){
-
-  abund <- as.data.frame(otu_table(data))
-  tax <- as.data.frame(tax_table(data))
   
+  tax <- data[["tax"]]
+    
   ## First make sure that all entires are strings
   for ( i in 1:ncol(tax) ){
     tax[,i] <- as.character(tax[,i])  
@@ -43,6 +43,13 @@ amp_rename <- function(data, tax.class = NULL, tax.empty = "best", tax.level = "
   tax$Order <- gsub("o__", "", tax$Order)
   tax$Family <- gsub("f__", "", tax$Family)
   tax$Genus <- gsub("g__", "", tax$Genus)
+  tax$Kingdom <- gsub("uncultured", "", tax$Kingdom)
+  tax$Phylum <- gsub("uncultured", "", tax$Phylum)
+  tax$Phylum <- gsub("uncultured", "", tax$Phylum)
+  tax$Class <- gsub("uncultured", "", tax$Class)
+  tax$Order <- gsub("uncultured", "", tax$Order)
+  tax$Family <- gsub("uncultured", "", tax$Family)
+  tax$Genus <- gsub("uncultured", "", tax$Genus)
   
   ## Check if there is a species level otherwise add it for consistency
   if (!is.null(tax$Species)){
@@ -65,32 +72,24 @@ amp_rename <- function(data, tax.class = NULL, tax.empty = "best", tax.level = "
     }
   }
   
+## Handle empty taxonomic strings
   if(tax.empty == "best"){
-    tax[tax$Kingdom == "","Kingdom"] <- "Unclassified"
-    for (i in 1:nrow(tax)) {   
-      if (tax[i,"Species"] == "") {
-        if (tax[i,"Genus"] != "") { rn <- paste("g__", tax[i,"Genus"], "_", rownames(tax)[i], sep = "") } else{
-          if (tax[i,"Family"] != "") { rn <- paste("f__", tax[i,"Family"], "_", rownames(tax)[i], sep = "") } else{
-            if (tax[i,"Order"] != "") { rn <- paste("o__", tax[i,"Order"], "_", rownames(tax)[i], sep = "") } else{
-              if (tax[i,"Class"] != "") { rn <- paste("c__", tax[i,"Class"], "_", rownames(tax)[i], sep = "") } else{
-                if (tax[i,"Phylum"] != "") { rn <- paste("p__", tax[i,"Phylum"], "_", rownames(tax)[i], sep = "") } else{
-                  if (tax[i,"Kingdom"] != "") { rn <- paste("k__", tax[i,"Kingdom"], "_", rownames(tax)[i], sep = "") } 
-                }
-              }
-            }
-          }
-        }
-      }
-      tax[i,tax[i,] == ""] <- rn
-    }
+    tax <- mutate(tax, Kingdom, Kingdom = ifelse(Kingdom == "", "Unclassified", Kingdom)) %>%
+      mutate(Phylum, Phylum = ifelse(Phylum == "", paste("k__", Kingdom, "_", rownames(tax), sep = ""), Phylum)) %>%
+      mutate(Class, Class = ifelse(Class == "", ifelse(grepl("__", Phylum), Phylum, paste("c__", Phylum, "_", rownames(tax), sep = "")), Class)) %>%
+      mutate(Order, Order = ifelse(Order == "", ifelse(grepl("__", Class), Class, paste("c__", Class, "_", rownames(tax), sep = "")), Order)) %>%
+      mutate(Family, Family = ifelse(Family == "", ifelse(grepl("__", Order), Order, paste("o__", Order, "_", rownames(tax), sep = "")), Family)) %>%
+      mutate(Genus, Genus = ifelse(Genus == "", ifelse(grepl("__", Family), Family, paste("f__", Family, "_", rownames(tax), sep = "")), Genus)) %>%
+      mutate(Species, Species = ifelse(Species == "", ifelse(grepl("__", Genus), Genus, paste("g__", Genus, "_", rownames(tax), sep = "")), Species))
   }
-  
+
   if(tax.empty == "remove"){
+    abund <- data[["abund"]]
     tax <- subset(tax, tax[,tax.level] != "")
     abund <- subset(abund, rownames(abund) %in% rownames(tax))
+    data[["abund"]] <- abund
   }
+  data[["tax"]] <- tax
   
-  data@tax_table <- tax_table(as.matrix(tax))
-  data@otu_table <- otu_table(as.matrix(abund), taxa_are_rows = T)
   return(data)
 }

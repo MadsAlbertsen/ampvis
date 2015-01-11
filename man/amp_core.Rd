@@ -6,7 +6,7 @@
 amp_core(data)
 }
 \arguments{
-\item{data}{(required) A phyloseq object.}
+\item{data}{(required) A phyloseq object (or a list).}
 
 \item{group}{Group the data based on a sample variable (default: "Sample").}
 

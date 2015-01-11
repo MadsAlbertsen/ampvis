@@ -4,7 +4,7 @@
 #'
 #' @usage amp_headtmap(data)
 #'
-#' @param data (required) A phyloseq object including sample data.
+#' @param data (required) A phyloseq object including sample data (or a list).
 #' @param group A variable from the associated sample data to group samples by.
 #' @param scale A variable from the associated sample data to scale the abundance by.
 #' @param normalise A specific sample or group to normalise the counts to, or "relative".
@@ -27,30 +27,32 @@
 #' 
 #' @export
 #' @import ggplot2
-#' @import plyr
+#' @import dplyr
 #' @import reshape2
 #' @import phyloseq
+#' @import data.table
 #' @import grid
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
 amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T,plot.text.size = 4){
   
+  ## Check the input data type and convert to list if it's a phyloseq object
+  if (!is.list(data)){ 
+    data <- list(abund = as.data.frame(otu_table(data)),
+                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
+                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+  }
+  
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
   
-  ## Aggregate to a specific taxonomic level
-  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
+  ## Extract the data into seperate objects for readability
+  abund <- data[["abund"]]  
+  tax <- data[["tax"]]
+  sample <- data[["sample"]]
   
-  ## Extract all data from the phyloseq object
-  abund<-as.data.frame(otu_table(data))
-  tax <- data.frame(tax_table(data), OTU = rownames(tax_table(data)))
-  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
-  
-  ## Handle NA values
-  if(plot.na == F){ plot.na <- "grey50" }else{ plot.na <-"#EF8A62" }  
-  
-  ## Scale the data by a select variable
+  ## Scale the data by a selected metadata variable
   if (!is.null(scale)){
     variable <- as.numeric(sample[,scale])
     abund <- t(t(abund)*variable)
@@ -65,13 +67,16 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     } else {
       tax <- data.frame(tax, Display = tax[,tax.aggregate])
     }
-  )
+  )  
   
-  ## Merge the taxonomic and abundance information
-  abund2 <- cbind.data.frame(tax, abund)
+  # Aggregate to a specific taxonomic level
+  abund3 <- cbind.data.frame(Display = tax[,"Display"], abund) %>%
+    melt(id.var = "Display", value.name= "Abundance", variable.name = "Sample")
   
-  ## Convert to long format 
-  abund3 <- melt(abund2, id.var = colnames(tax), value.name= "Abundance", variable.name = "Sample")  
+  abund3 <- data.table(abund3)[, sum:=sum(Abundance), by=list(Display, Sample)] %>%
+            setkey(Display, Sample) %>%
+            unique() %>% 
+            as.data.frame()
   
   ## Add group information
   suppressWarnings(
@@ -81,38 +86,42 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
       } else{
         grp <- data.frame(Sample = rownames(sample), Group = sample[,group]) 
       }
-      abund5 <- join(x = abund3, y = grp, by = "Sample")
+      abund3$Group <- grp$Group[match(abund3$Sample, grp$Sample)]
+      abund5 <- abund3
     } else{ abund5 <- data.frame(abund3, Group = abund3$Sample)}
   )
   
   ## Take the average to group level
-  DT3 <- data.table(abund5)
-  DT4 <- DT3[, lapply(.SD, mean, na.rm=TRUE), by=list(Display,Group), .SDcols=c("Abundance") ]   
-  abund6 <- data.frame(DT4)
+  abund6 <- data.table(abund5)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
+            setkey(Display, Group) %>%
+            unique() %>% 
+            as.data.frame()
   
   ## Find the X most abundant levels
-  TotalCounts <- ddply(abund6, ~Display, summarise, Abundance = sum(Abundance))
-  TotalCounts <- TotalCounts[with(TotalCounts, order(-Abundance)),]
+  TotalCounts <- group_by(abund6, Display) %>%
+    summarise(Abundance = sum(Abundance)) %>%
+    arrange(desc(Abundance))
   
   ## Subset to X most abundant levels
   if (is.numeric(tax.show)){
     if (tax.show > nrow(TotalCounts)){  
       tax.show <- nrow(TotalCounts)
     }
-    abund7 <- subset(abund6, abund6[,1] %in% TotalCounts[1:tax.show,"Display"])  
+    abund7 <- filter(abund6, Display %in% TotalCounts$Display[1:tax.show])
   }
   
   ## Subset to a list of level names
   if (!is.numeric(tax.show)){
     if (tax.show != "all"){
-      abund7 <- subset(abund6, abund6[,1] %in% tax.show)    
+      abund7 <- filter(abund6, Display %in% tax.show)    
     }
     ### Or just show all  
     if (tax.show == "all"){
       tax.show <- nrow(TotalCounts)  
-      abund7 <- subset(abund6, abund6[,1] %in% TotalCounts[1:tax.show,"Display"])  
+      abund7 <- filter(abund6, Display %in% TotalCounts$Display[1:tax.show]) 
     }
   }
+  abund7 <- as.data.frame(abund7)
   
   ## Normalise to a specific group (The Abundance of the group is set as 1)  
   
@@ -133,7 +142,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   ## Order.y
   if (is.null(order.y)){
-    abund7[,1] <- factor(abund7[,1], levels = rev(TotalCounts[,1]))
+    abund7$Display <- factor(abund7$Display, levels = rev(TotalCounts$Display))
   }
   if (!is.null(order.y)){
     if (length(order.y) == 1){
@@ -158,6 +167,9 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     }
   }
   
+  ## Handle NA values
+  if(plot.na == F){ plot.na <- "grey50" }else{ plot.na <-"#EF8A62" }  
+  
   ## Scale to percentages if not normalised and scaled
   
   if (is.null(scale) & is.null(normalise)){
@@ -165,7 +177,6 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   
   ## Make a heatmap style plot
-  
   p <- ggplot(abund7, aes_string(x = "Group", y = "Display", label = formatC("Abundance", format = "f", digits = 1))) +     
     geom_tile(aes(fill = Abundance), colour = "white", size = 0.5) +
     theme(axis.text.x = element_text(size = 10, hjust = 1, angle = 90)) + 
@@ -191,12 +202,11 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   
   ## Define the output 
-  
   if (output == "complete"){
     outlist <- list(heatmap = p, sampledata = sample, taxonomy = tax, abundance = as.data.frame(otu_table(data)), data = abund7)
     return(outlist)  
   }
   if (output == "plot"){
     return(p)
-  } 
+  }
 }

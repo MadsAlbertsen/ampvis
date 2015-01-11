@@ -6,7 +6,7 @@
 amp_headtmap(data)
 }
 \arguments{
-\item{data}{(required) A phyloseq object including sample data.}
+\item{data}{(required) A phyloseq object including sample data (or a list).}
 
 \item{group}{A variable from the associated sample data to group samples by.}
 

@@ -4,7 +4,7 @@
 #'
 #' @usage amp_core(data)
 #'
-#' @param data (required) A phyloseq object.
+#' @param data (required) A phyloseq object (or a list).
 #' @param group Group the data based on a sample variable (default: "Sample").
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
@@ -29,80 +29,86 @@
 
 amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL, tax.empty = "best", plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", weight = T, abund.treshold = 0.1){
   
+  ## Check the input data type and convert to list if it's a phyloseq object
+  if (!is.list(data)){ 
+    data <- list(abund = as.data.frame(otu_table(data)),
+                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
+                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+  }
+  
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
   
-  ## Aggregate to a specific taxonomic level
-  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
-    
-  ## Extract all data from the phyloseq object
-  abund<-as.data.frame(otu_table(data))
-  tax <- data.frame(tax_table(data), OTU = rownames(tax_table(data)))
-  sample <- suppressWarnings(data.frame(sample_data(data)))
+  ## Extract the data into seperate objects for readability
+  abund <- data[["abund"]]  
+  tax <- data[["tax"]]
+  sample <- data[["sample"]]
   
-  outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
-    
-  ## Merge the taxonomic and abundance information
+  # Aggregate to a specific taxonomic level
+  abund1 <- cbind.data.frame(Display = tax[,tax.aggregate], abund) %>%
+    melt(id.var = "Display", value.name= "Abundance", variable.name = "Sample")
+  abund1 <- data.table(abund1)[, sum:=sum(Abundance), by=list(Display, Sample)] %>%
+    setkey(Display, Sample) %>%
+    unique() %>%
+    as.data.frame()
   
-  abund2 <- cbind.data.frame(tax, abund)
+  ## Add group information
+  suppressWarnings(
+    if (group != "Sample"){
+      if (length(group) > 1){
+        grp <- data.frame(Sample = rownames(sample), Group = apply(sample[,group], 1, paste, collapse = " ")) 
+      } else{
+        grp <- data.frame(Sample = rownames(sample), Group = sample[,group]) 
+      }
+      abund1$Group <- grp$Group[match(abund1$Sample, grp$Sample)]
+      abund2 <- abund1
+    } else{ abund2 <- data.frame(abund1, Group = abund1$Sample)}
+  )
   
-  ## Melt data to long format
-  abund3 <- melt(abund2, id.var = c(colnames(tax)), measure.vars=rownames(sample))
-  colnames(abund3)[ncol(abund3)] <- "Abundance" 
-  colnames(abund3)[ncol(abund3)-1] <- "Sample" 
-  colnames(sample)[1] <- "Sample"
-  
-  ## Merge sample data
-  temp1 <- join(x = abund3, y = data.frame(sample), by = "Sample")
-  
-  
-  ## Summarise to specific taxonomic levels and groups using data.table for blazing speed
-  colnames(temp1)[colnames(temp1) == tax.aggregate] <- "var1"
-  colnames(temp1)[colnames(temp1) == group] <- "var2"
-  DT <- data.table(temp1)
-  DT2 <- DT[, lapply(.SD, mean, na.rm=TRUE), by=list(var1, var2), .SDcols=c("Abundance") ]
-  temp2 <- data.frame(DT2)
-  colnames(temp2)[colnames(temp2) == "var2"] <- group
-  colnames(temp2)[colnames(temp2) == "var1"] <- tax.aggregate
-  
-  temp2$freq <- 1
-  temp2 <- subset(temp2, Abundance > 0)
+  ## Take the average to group level
+  abund3 <- data.table(abund2)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
+    setkey(Display, Group) %>%
+    unique() %>%
+    filter(Abundance > 0) %>%  
+    mutate(freq = 1)
   
   ## Make a nice frequency plot
   
   if(plot.type == "frequency"){
-    temp3 <- ddply(temp2, c(tax.aggregate), summarise, Frequency = sum(freq), Mean = mean(Abundance))
-      
+    temp3 <- group_by(abund3, Display) %>%
+      summarise(Frequency = sum(freq), Mean = mean(Abundance))
+    
     if(weight == T){
       p <- ggplot(data = temp3, aes(x = Frequency, weight = Mean / sum(Mean)*100)) +
         ylab("Read abundance (%)") +
         xlab(paste("Frequency (Observed in N ", group, "s)", sep = ""))
-        if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
-        if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
+      if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
+      if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
     }
     
     if(weight == F){
       p <- ggplot(data = temp3, aes(x = Frequency)) +
         ylab("Count") +
         xlab(paste("Frequency (Observed in N ", group, "s)", sep=""))
-        if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
-        if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
+      if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
+      if(max(temp3$Frequency) <= 30){ p <- p + geom_bar(binwidth = 1)}
     } 
   }
   
   if (plot.type == "core") {
-    temp2$Abundance <- temp2$Abundance/scale.seq * 100
-    temp2$HA <- ifelse(temp2$Abundance > abund.treshold, 1, 0)
-    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance))
+    abund3$Abundance <- abund3$Abundance/scale.seq * 100
+    abund3$HA <- ifelse(abund3$Abundance > abund.treshold, 1, 0)
+#    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance))
+    temp3 <- group_by(abund3, Display) %>%
+             summarise(Frequency = sum(freq), freq_HA= sum(HA), Mean = mean(Abundance))
     
     p <- ggplot(data = temp3, aes(x = Frequency, y = freq_HA)) +
       geom_jitter(size = 3, alpha = 0.5) +
       ylab(paste("Highly abundant in N ", group, "s (>", abund.treshold, "%)" , sep="")) +
       xlab(paste("Observed in N ", group, "s", sep=""))
+    print(paste("Core plot done:", date()))
   }
   
-  outlist <- append(outlist, list(data = temp3, plot = p))
-  
-  if(output == "complete"){ return(outlist) }
+  if(output == "complete"){ return(list(data = temp3, plot = p, abund = abund, tax = tax, sample = sample)) }
   if(output == "plot"){ return(p) }
 }

@@ -5,6 +5,14 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.7.0
+#### Enhancements
+ - Major speed updates. data.table and dplyr used to replace plyr.
+ - All functions now accept a list of dataframes instead of a phyloseq object. This significantly improves speed.
+#### New functions
+ - amp_convert: Convert a phyloseq object to a list of dataframes.
+ - amp_load: Load data and convert to a phyloseq object.
+
 ### 1.5.0
 #### Enhancements
  - amp_rabund: You can now flip the axis using plot.flip = T.

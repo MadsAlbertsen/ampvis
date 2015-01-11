@@ -36,7 +36,7 @@
 #' 
 #' @export
 #' @import ggplot2
-#' @import plyr
+#' @import dplyr
 #' @import reshape2
 #' @import phyloseq
 #' @import grid
@@ -46,15 +46,23 @@
 
 amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4){
   
-  ## Clean up the taxonomy
-  data <- amp_rename(data = data, tax.empty = tax.empty)  
+  ## Load the data. If phyloseq object it should be converted to a list of data.frames
+  if (!is.list(data)){ 
+    data <- list(abund = as.data.frame(otu_table(data)),
+                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
+                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+  }
   
-  ## Load the data and extract relevant dataframes from the phyloseq object
-  abund<-as.data.frame(otu_table(data))
-  tax<-as.data.frame(tax_table(data))
-  sample <- suppressWarnings(as.data.frame(sample_data(data)))
+  ## Clean up the taxonomy
+  data <- amp_rename(data = data, tax.empty = tax.empty)
+  
+  ## Extract the data into seperate objects for readability
+  abund <- data[["abund"]]  
+  tax <- data[["tax"]]
+  sample <- data[["sample"]]
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
+  
   
   ## Scale the data
   if (!is.null(scale)){
@@ -64,9 +72,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   ## Transform the data
   abund1 <- abund
-  if (trans == "sqrt"){
-    abund1 <- sqrt(abund)
-  }
+  if (trans == "sqrt"){ abund1 <- sqrt(abund)}
   
   ## Calculate NMDS
   
@@ -208,26 +214,33 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   }  
   
   ###Plot: Group the data either by centroid or chull
-  if (!is.null(plot.group) & !is.null(plot.color)){
-    ts <- data.frame(group = combined[,plot.color], x = combined[,plot.x], y = combined[,plot.y])
-    os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
+  if (!is.null(plot.group) & !is.null(plot.color)){    
+    os <- data.frame(group = combined[,plot.color], x = combined[,plot.x], y = combined[,plot.y]) %>%
+      group_by(group) %>%
+      summarise(cx = mean(x), cy = mean(y)) %>%
+      as.data.frame()
     os2 <- merge(combined, os, by.x=plot.color, by.y = "group")
+    
+    
     if (plot.group == "centroid"){
       p <- p + geom_segment(data=os2, aes_string(x = plot.x, xend = "cx", y = plot.y, yend = "cy", color = plot.color), size = 1)
     }
     
     if (plot.group == "chull"){
-      find_hull <- function(df) df[chull(df[,plot.x], df[,plot.y]), ]
+      splitData <- split(combined, combined[,plot.color]) %>%
+                   lapply(function(df){df[chull(df[,plot.x], df[,plot.y]), ]})
+      hulls <- do.call(rbind, splitData)
       
-      
-      hulls <- ddply(combined, plot.color, find_hull)
       p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
     }
   }
   
   if (!is.null(plot.group.label)){
-    ts <- data.frame(group = combined[,plot.group.label], x = combined[,plot.x], y = combined[,plot.y])
-    os <- ddply(ts, ~group, summarize, cx = mean(x), cy = mean(y))
+    os <- data.frame(group = combined[,plot.group.label], x = combined[,plot.x], y = combined[,plot.y]) %>%
+      group_by(group) %>%
+      summarise(cx = mean(x), cy = mean(y)) %>%
+      as.data.frame()
+    
     os2 <- merge(combined, os, by.x=plot.group.label, by.y = "group")
     os3<- os2[!duplicated(os2[,plot.group.label]),]
     p <- p + geom_text(data=os3, aes_string(x = "cx", y = "cy", label = plot.group.label), size = plot.group.label.size , color = "black", fontface = 2) 
@@ -235,7 +248,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   ### Plot: Plot the names of the n most extreme species
   if(!is.null(plot.nspecies)){
-      p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = 4)  
+    p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = 4)  
   }
   
   ### Plot: Environmental factors
