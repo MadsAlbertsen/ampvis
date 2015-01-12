@@ -5,13 +5,17 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.7.1
+#### Bugfixes
+ - Plyr and dplyr loading order messed up the functions. Fixed.
+
 ### 1.7.0
 #### Enhancements
- - Major speed updates. data.table and dplyr used to replace plyr.
+ - data.table and dplyr have been implemented to replace plyr and phyloseq functions. This results in a massive speed increase.
  - All functions now accept a list of dataframes instead of a phyloseq object. This significantly improves speed.
 #### New functions
  - amp_convert: Convert a phyloseq object to a list of dataframes.
- - amp_load: Load data and convert to a phyloseq object.
+ - amp_load: Load data and convert it to a phyloseq object.
 
 ### 1.5.0
 #### Enhancements
