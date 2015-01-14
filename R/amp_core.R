@@ -30,11 +30,9 @@
 amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL, tax.empty = "best", plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", weight = T, abund.treshold = 0.1){
   
   ## Check the input data type and convert to list if it's a phyloseq object
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
@@ -76,10 +74,12 @@ amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL
   
   if(plot.type == "frequency"){
     temp3 <- group_by(abund3, Display) %>%
-      summarise(Frequency = sum(freq), Mean = mean(Abundance))
+      summarise(Frequency = sum(freq), Total = sum(sum)) %>%
+      mutate(Percent = Total / (length(unique(abund3$Group)) * scale.seq) * 100) %>%
+      as.data.frame()
     
     if(weight == T){
-      p <- ggplot(data = temp3, aes(x = Frequency, weight = Mean / sum(Mean)*100)) +
+      p <- ggplot(data = temp3, aes(x = Frequency, weight = Percent)) +
         ylab("Read abundance (%)") +
         xlab(paste("Frequency (Observed in N ", group, "s)", sep = ""))
       if(max(temp3$Frequency) > 30){ p <- p + geom_bar()}
@@ -98,15 +98,20 @@ amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL
   if (plot.type == "core") {
     abund3$Abundance <- abund3$Abundance/scale.seq * 100
     abund3$HA <- ifelse(abund3$Abundance > abund.treshold, 1, 0)
-#    temp3 <- ddply(temp2, tax.aggregate, summarise, Frequency = sum(freq), freq_HA = sum(HA),  Mean = mean(Abundance))
     temp3 <- group_by(abund3, Display) %>%
-             summarise(Frequency = sum(freq), freq_HA= sum(HA), Mean = mean(Abundance))
+      summarise(Frequency = sum(freq), freq_A= sum(HA), Abundance = round(mean(Abundance),2)) %>%
+      as.data.frame()
     
-    p <- ggplot(data = temp3, aes(x = Frequency, y = freq_HA)) +
+    p <- ggplot(data = temp3, aes(x = Frequency, y = freq_A)) +
       geom_jitter(size = 3, alpha = 0.5) +
-      ylab(paste("Highly abundant in N ", group, "s (>", abund.treshold, "%)" , sep="")) +
+      ylab(paste("Abundant in N ", group, "s (>", abund.treshold, "%)" , sep="")) +
       xlab(paste("Observed in N ", group, "s", sep=""))
-    print(paste("Core plot done:", date()))
+  }
+  
+  if(tax.aggregate == "OTU"){
+    colnames(temp3)[1] <- "OTU"
+    core <- merge(x = temp3, y = tax, by = "OTU") 
+    temp3 <- core
   }
   
   if(output == "complete"){ return(list(data = temp3, plot = p, abund = abund, tax = tax, sample = sample)) }

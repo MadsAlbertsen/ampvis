@@ -47,14 +47,16 @@
 amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4){
   
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               #sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+               sample = as.data.frame(sample_data(data)))
+  
   
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.empty = tax.empty)
+  
+  
   
   ## Extract the data into seperate objects for readability
   abund <- data[["abund"]]  
@@ -114,7 +116,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     }
     
     if(!is.null(constrain)){
-      constrain1 <- sample[, constrain]
+      constrain1 <- as.data.frame(sample[, constrain])
       colnames(constrain1) <- "constrain"
       model <- rda(t(abund1) ~ constrain1$constrain)  
       plot.x <- "RDA1"
@@ -152,9 +154,9 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ## Fit environmental factors using vegans envfit function
   
   if(!is.null(envfit.factor)){   
-    s3  <- suppressWarnings(as.data.frame(as.matrix(sample[, envfit.factor])))
-    if (ordinate.type == "PCA"){ef.f <- envfit(model, s3, permutations = 999, choices=c(plot.x, plot.y))}
-    if (ordinate.type == "NMDS"){ef.f <- envfit(model, s3, permutations = 999)}
+    fit  <- sample[, envfit.factor]
+    if (ordinate.type == "PCA"){suppressWarnings(ef.f <- envfit(model, fit, permutations = 999, choices=c(plot.x, plot.y)))}
+    if (ordinate.type == "NMDS"){ef.f <- envfit(model, fit, permutations = 999)}
     temp <- cbind.data.frame(rownames(ef.f$factors$centroids),ef.f$factors$var.id, ef.f$factors$centroids)
     colnames(temp)[1:2] <- c("Name","Variable")
     temp1 <- cbind.data.frame(names(ef.f$factors$pvals), ef.f$factors$pvals)
@@ -168,8 +170,9 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ## Fit environmental numeric data using vegans envfit function
   
   if (!is.null(envfit.numeric)){
-    if (ordinate.type == "PCA") {ef.n <- envfit(model, sample[, envfit.numeric], permutations = 999, choices=c(plot.x, plot.y))}
-    if (ordinate.type == "NMDS") {ef.n <- envfit(model, sample[, envfit.numeric], permutations = 999)}
+    fit <- sample[, envfit.numeric]
+    if (ordinate.type == "PCA") {suppressWarnings(ef.n <- envfit(model, fit, permutations = 999, choices=c(plot.x, plot.y)))}
+    if (ordinate.type == "NMDS") {ef.n <- envfit(model, fit, permutations = 999)}
     temp <- cbind.data.frame(rownames(ef.n$vectors$arrows), ef.n$vectors$arrows*sqrt(ef.n$vectors$r), ef.n$vectors$pvals)
     colnames(temp)[c(1,4)] <- c("Name","pval")      
     n.sig <- subset(temp, pval <= envfit.significant)          
@@ -228,7 +231,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     
     if (plot.group == "chull"){
       splitData <- split(combined, combined[,plot.color]) %>%
-                   lapply(function(df){df[chull(df[,plot.x], df[,plot.y]), ]})
+        lapply(function(df){df[chull(df[,plot.x], df[,plot.y]), ]})
       hulls <- do.call(rbind, splitData)
       
       p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)

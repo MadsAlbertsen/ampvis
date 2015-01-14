@@ -34,11 +34,9 @@
 amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F){
   
   ## Check the input data type and convert to list if it's a phyloseq object
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)

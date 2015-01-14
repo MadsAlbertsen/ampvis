@@ -37,12 +37,9 @@
 
 amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T,plot.text.size = 4){
   
-  ## Check the input data type and convert to list if it's a phyloseq object
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)

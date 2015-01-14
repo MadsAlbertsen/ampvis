@@ -40,11 +40,9 @@ amp_correlation <- function(data, trans = "none", treshold.cor = 0.8, treshold.p
   
   print("Loading, cleaning and transforming the data")
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.empty = tax.empty)

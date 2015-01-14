@@ -37,9 +37,6 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.display = N
   
   ## Aggregate to a specific taxonomic level
   if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
-    
-  
-  
   
   ## Convert to DESeq2 object
   groupF <- as.formula(paste("~", group, sep=""))

@@ -22,14 +22,9 @@
 amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, plot.color = NULL){
   
   ## Extract the data from the phyloseq object
-  if (!is.list(data)){ 
-    data <- list(abund = as.data.frame(otu_table(data)),
-                 tax = data.frame(tax_table(data), OTU = rownames(tax_table(data))),
-                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
-  }
-  abund <- data[["abund"]]  
-  tax <- data[["tax"]]
-  sample <- data[["sample"]]
+  abund <- as.data.frame(otu_table(data)@.Data)
+  tax <- data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data)))
+  sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   
   ## Calculate beta-diversity
   betad <- vegdist(x = abund, method = method)
