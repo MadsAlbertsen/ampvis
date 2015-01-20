@@ -18,6 +18,7 @@
 #' @param plot.flip Flip the axis of the plot (default: F).
 #' @param point.size Size of points (default: 2).
 #' @param output Either plot or complete (default: "plot").
+#' @param sort.by Sort the boxplot by either Median, Mean or Total (default = "Median")
 #' 
 #' @return A ggplot2 object
 #' 
@@ -31,7 +32,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median"){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -82,9 +83,10 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
   if (plot.type != "curve"){
     ## Find the X most abundant levels and sort
     TotalCounts <- group_by(abund5, Display) %>%
-      summarise(Abundance = sum(Abundance)) %>%
-      arrange(desc(Abundance)) %>%
-      as.data.frame()
+      summarise(Median = median(Abundance), Total = sum(Abundance), Mean = mean(Abundance))
+    if(sort.by == "Median"){TotalCounts %<>% arrange(desc(Median)) %>% as.data.frame()}
+    if(sort.by == "Mean"){TotalCounts %<>% arrange(desc(Mean)) %>% as.data.frame()}
+    if(sort.by == "Total"){TotalCounts %<>% arrange(desc(Total)) %>% as.data.frame()}
     
     abund5$Display <- factor(abund5$Display, levels = rev(TotalCounts$Display))
     

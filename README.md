@@ -5,6 +5,13 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.8.1
+#### Bugfixes
+  - amp_rabund: Now sorts the boxplots by median as default.
+
+#### Enhancements
+  - amp_rabund: THe new option "sort.by" can be used to sort the boxplots by Median, Mean or Total. 
+
 ### 1.8.0
 #### Enhancements 
  - Major speed improvement to generation of data.frames from phyloseq objects. amp_convert is not needed anymore. Updated in all functions.

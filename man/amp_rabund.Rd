@@ -34,6 +34,8 @@ amp_rabund(data)
 \item{point.size}{Size of points (default: 2).}
 
 \item{plot.flip}{Flip the axis of the plot (default: F).}
+
+\item{sort.by}{Sort the boxplot by either Median, Mean or Total (default = "Median")}
 }
 \value{
 A ggplot2 object
