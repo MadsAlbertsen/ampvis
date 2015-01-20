@@ -29,7 +29,7 @@ amp_rename <- function(data, tax.class = NULL, tax.empty = "best", tax.level = "
   ## Change a specific phylum to class level
   if(!is.null(tax.class)){
     for (i in 1:nrow(tax)){
-      if (!is.na(tax$Phylum[i]) & tax$Phylum[i] == tax.class){
+      if (!is.na(tax$Phylum[i]) & tax$Phylum[i] %in% tax.class){
         tax$Phylum[i] <- tax$Class[i]   
       }
     }

@@ -5,6 +5,11 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+
+### 1.8.2
+#### Bugfixes
+  - amp_rename: Now can convert more than 1 phylum to class level.
+
 ### 1.8.1
 #### Bugfixes
   - amp_rabund: Now sorts the boxplots by median as default.
