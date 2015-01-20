@@ -200,7 +200,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   ## Define the output 
   if (output == "complete"){
-    outlist <- list(heatmap = p, sampledata = sample, taxonomy = tax, abundance = as.data.frame(otu_table(data)), data = abund7)
+    outlist <- list(heatmap = p, data = abund7)
     return(outlist)  
   }
   if (output == "plot"){
