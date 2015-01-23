@@ -154,8 +154,8 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ## Fit environmental factors using vegans envfit function
   
   if(!is.null(envfit.factor)){   
-    fit  <- sample[, envfit.factor]
-    if (ordinate.type == "PCA"){suppressWarnings(ef.f <- envfit(model, fit, permutations = 999, choices=c(plot.x, plot.y)))}
+    fit  <- suppressWarnings(as.data.frame(as.matrix(sample[, envfit.factor])))
+    if (ordinate.type == "PCA"){ef.f <- envfit(model, fit, permutations = 999, choices=c(plot.x, plot.y))}
     if (ordinate.type == "NMDS"){ef.f <- envfit(model, fit, permutations = 999)}
     temp <- cbind.data.frame(rownames(ef.f$factors$centroids),ef.f$factors$var.id, ef.f$factors$centroids)
     colnames(temp)[1:2] <- c("Name","Variable")
@@ -170,7 +170,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ## Fit environmental numeric data using vegans envfit function
   
   if (!is.null(envfit.numeric)){
-    fit <- sample[, envfit.numeric]
+    fit <- suppressWarnings(as.data.frame(as.matrix(sample[, envfit.numeric])))
     if (ordinate.type == "PCA") {suppressWarnings(ef.n <- envfit(model, fit, permutations = 999, choices=c(plot.x, plot.y)))}
     if (ordinate.type == "NMDS") {ef.n <- envfit(model, fit, permutations = 999)}
     temp <- cbind.data.frame(rownames(ef.n$vectors$arrows), ef.n$vectors$arrows*sqrt(ef.n$vectors$r), ef.n$vectors$pvals)

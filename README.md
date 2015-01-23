@@ -5,6 +5,9 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.8.3
+#### Bugfixes
+  - amp_ordinate: The envfit.factor function was broken. Fixed.
 
 ### 1.8.2
 #### Bugfixes
