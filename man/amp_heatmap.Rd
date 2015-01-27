@@ -29,7 +29,7 @@ amp_headtmap(data)
 
 \item{order.y}{A sample or vector to order the y-axis by.}
 
-\item{plot.numbers}{Plot the values on the heatmap (default: F)}
+\item{plot.numbers}{Plot the values on the heatmap (default: T)}
 
 \item{plot.breaks}{A vector of breaks for the abundance legend.}
 
