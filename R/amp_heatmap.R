@@ -15,7 +15,7 @@
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
-#' @param plot.numbers Plot the values on the heatmap (default: F)
+#' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
 #' @param plot.colorscale Either sqrt or log (default: "sqrt")
 #' @param plot.na Wether to color missing values with the lowest color in the scale (default: F).
