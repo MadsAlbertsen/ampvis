@@ -15,9 +15,9 @@
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
-#' @param plot.numbers Plot the values on the heatmap (default: F)
+#' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
-#' @param plot.colorscale Either sqrt or log (default: "sqrt")
+#' @param plot.colorscale Either sqrt or log10 (default: "sqrt")
 #' @param plot.na Wether to color missing values with the lowest color in the scale (default: F).
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
@@ -35,7 +35,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot", tax.clean.proteobacteria = T,plot.text.size = 4){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -125,7 +125,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   if(!is.null(normalise)){
     if (normalise != "relative"){
       temp <- dcast(abund7, Display~Group, value.var = "Abundance")
-      temp1 <- cbind.data.frame(Display = temp[,1], temp[,-1]/temp[,normalise])       
+      temp1 <- cbind.data.frame(Display = temp$Display, temp[,-1]/temp[,normalise])   
       abund7 <- melt(temp1, id.var = "Display", value.name="Abundance", variable.name="Group")
     }
   } 
@@ -142,25 +142,31 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     abund7$Display <- factor(abund7$Display, levels = rev(TotalCounts$Display))
   }
   if (!is.null(order.y)){
-    if (length(order.y) == 1){
-      temp1 <- subset(abund7, abund7[,2] %in% order.y)
-      temp1 <- temp1[with(temp1, order(temp1[,3])),]
-      abund7[,1] <- factor(abund7[,1], levels = temp1[,1])
+    if (length(order.y) == 1){      
+      temp1 <- filter(abund7, Group == order.y) %>%
+        group_by(Display) %>%
+        summarise(Mean = mean(Abundance)) %>%
+        arrange(desc(Mean))
+      
+      abund7$Display <- factor(abund7$Display, levels = rev(temp1$Display))
     }
     if (length(order.y) > 1){
-      abund7[,1] <- factor(abund7[,1], levels = order.y)
+      abund7$Display <- factor(abund7$Display, levels = order.y)
     }
   }
   
   ## Order.x
   if (!is.null(order.x)){
     if (length(order.x) == 1){
-      temp1 <- subset(abund7, abund7[,1] %in% order.x)
-      temp1 <- temp1[with(temp1, order(temp1[,3])),]
-      abund7[,2] <- factor(abund7[,2], levels = temp1[,2])
+      temp1 <- filter(abund7, Display == order.x) %>%
+        group_by(Group) %>%
+        summarise(Mean = mean(Abundance)) %>%
+        arrange(desc(Mean))
+      abund7$Group <- factor(abund7$Group, levels = as.character(temp1$Group))
+        
     }    
     if (length(order.x) > 1){
-      abund7[,2] <- factor(abund7[,2], levels = order.x)
+      abund7$Group <- factor(abund7$Group, levels = order.x)
     }
   }
   

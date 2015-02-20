@@ -29,11 +29,11 @@ amp_headtmap(data)
 
 \item{order.y}{A sample or vector to order the y-axis by.}
 
-\item{plot.numbers}{Plot the values on the heatmap (default: F)}
+\item{plot.numbers}{Plot the values on the heatmap (default: T)}
 
 \item{plot.breaks}{A vector of breaks for the abundance legend.}
 
-\item{plot.colorscale}{Either sqrt or log (default: "sqrt")}
+\item{plot.colorscale}{Either sqrt or log10 (default: "sqrt")}
 
 \item{plot.na}{Wether to color missing values with the lowest color in the scale (default: F).}
 

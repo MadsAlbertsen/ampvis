@@ -22,7 +22,7 @@
 amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, plot.color = NULL){
   
   ## Extract the data from the phyloseq object
-  abund <- as.data.frame(otu_table(data)@.Data)
+  abund <- as.data.frame(otu_table(data)@.Data) %>% t()
   tax <- data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data)))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   

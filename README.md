@@ -5,6 +5,18 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.9.0
+#### Enhancements
+  - data: The newest version of the MiDAS data have been included as `data(MiDAS_1.20)`. It includes small updates to the taxonomy and a single sample have been removed (2591) due to wierdness. The OTU names are now locked! Hence, OTUs in this release will have the same name in the next release.
+  - data: Note that the MiDAS_1.20 data is not rarefied by default anymore.
+  - data: The DNA extraction data is now included as `data(DNAext_1.0)`.
+  - amp_test_species: Updated to work with the same input as the rest of the functions.
+  - amp_test_cluster: Updated to work with the same input as the rest of the functions.
+  
+#### Bugfixes
+  - amp_load: the rarefy parameter only worked with 10000 seqences.
+  - amp_heatmap: order.x and order.y was broken. fixed.
+
 ### 1.8.3
 #### Bugfixes
   - amp_ordinate: The envfit.factor function was broken. Fixed.

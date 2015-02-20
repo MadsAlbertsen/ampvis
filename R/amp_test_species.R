@@ -29,34 +29,70 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.display = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", scale.seq = 10000, label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2){
+amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2){
   
+  data <- list(abund = as.data.frame(otu_table(data)@.Data),
+               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
+               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
-  ## Clean the taxonomy  
+  ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
   
-  ## Aggregate to a specific taxonomic level
-  if (tax.aggregate != "OTU"){ data <- tax_glom(data, taxrank=tax.aggregate) }
+  ## Extract the data into seperate objects for readability
+  abund <- data[["abund"]]  
+  tax <- data[["tax"]]
+  sample <- data[["sample"]]
+
+  ## Make a name variable that can be used instead of tax.aggregate to display multiple levels 
+  suppressWarnings(
+    if (!is.null(tax.add)){
+      if (tax.add != tax.aggregate) {
+        tax <- data.frame(tax, Display = apply(tax[,c(tax.add,tax.aggregate)], 1, paste, collapse="; "))
+      }
+    } else {
+      tax <- data.frame(tax, Display = tax[,tax.aggregate])
+    }
+  )  
   
-  ## Convert to DESeq2 object
+  # Aggregate to a specific taxonomic level
+  abund3 <- cbind.data.frame(Display = tax[,"Display"], abund) %>%
+    melt(id.var = "Display", value.name= "Abundance", variable.name = "Sample")
+  
+  abund3 <- data.table(abund3)[, sum:=sum(Abundance), by=list(Display, Sample)] %>%
+    setkey(Display, Sample) %>%
+    unique() %>% 
+    as.data.frame()
+  
+  ## Convert to DESeq2 format
+  
+  abund4 <- dcast(abund3, formula = Display~Sample, value.var = "sum")
+  rownames(abund4) <- abund4$Display
+  abund4 <- abund4[,-1]
+  
   groupF <- as.formula(paste("~", group, sep=""))
-  data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)
+  
+  
+  data_deseq <- DESeqDataSetFromMatrix(countData = abund4,
+                                       colData = sample,
+                                       design = groupF)
+
+  #data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)
   
   ## Test for significant differential abundance
   data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType)
   
   ## Extract the results
   res = results(data_deseq_test, cooksCutoff = FALSE)  
-  res_tax = cbind(as.data.frame(res), as.matrix(tax_table(data)[rownames(res), ]), OTU = rownames(res))
+  res_tax = cbind(as.data.frame(res), Tax = rownames(res))
   
-  res_tax_sig = subset(res_tax, padj < sig & fold < abs(log2FoldChange))
-  res_tax_sig <- res_tax_sig[order(res_tax_sig$padj),]
+  res_tax_sig = subset(res_tax, padj < sig & fold < abs(log2FoldChange)) %>%
+    arrange(padj)
   
   if (nrow(res_tax_sig) > 1){  
   
   ## Plot the data
   ### MA plot
-  res_tax$Significant <- ifelse(rownames(res_tax) %in% rownames(res_tax_sig) , "Yes", "No")
+  res_tax$Significant <- ifelse(rownames(res_tax) %in% res_tax_sig$Tax , "Yes", "No")
   res_tax$Significant[is.na(res_tax$Significant)] <- "No"
   
   p1 <- ggplot(data = res_tax, aes(x = baseMean, y = log2FoldChange, color = Significant)) + 
@@ -65,42 +101,34 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.display = N
     scale_color_manual(values=c("black", "red")) +
     labs(x = "Mean abundance", y = "Log2 fold change")
   
-  if(label == T){
-    if (!is.null(tax.display)){
-      rlab <- data.frame(res_tax, Display = apply(res_tax[,c(tax.display, tax.aggregate)], 1, paste, collapse="; "))
-    }  else {
-      rlab <- data.frame(res_tax, Display = res_tax[,tax.aggregate])
-    }
-    p1 <- p1 + geom_text(data = subset(res_tax_label, Significant == "Yes"), aes(label = Display), size = 4, vjust = 1)
-      
-  }
   
-    
   ### Points plot of significant differential abundant entries
-  res_tax_sig_abund = cbind(as.matrix(tax_table(data)[rownames(res_tax_sig)]), as.data.frame(otu_table(data)[rownames(res_tax_sig), ]), OTU = rownames(res_tax_sig), padj = res_tax[rownames(res_tax_sig),"padj"])    
+  abund5 <- mutate(abund4, Tax = rownames(abund4)) %>%
+    melt(id.vars=c("Tax"),value.name="Count", variable.name="Sample") %>%
+    group_by(Sample) %>%
+    mutate(Abundance = Count / sum(Count)*100)
   
-  res_tax_sig_abund_long <- melt(res_tax_sig_abund, id.vars=c(colnames(tax_table(data)),"OTU","padj"),value.name="Count", variable.name="Sample")
+  abund6 <- merge(abund5, res_tax, by = "Tax") %>%
+    filter(padj < sig & fold < abs(log2FoldChange)) %>%
+    arrange(padj)
   
-  colnames(sample_data(data))[1] <- "Sample"
-  metadata <- suppressWarnings(as.matrix(sample_data(data))[,c("Sample",group)])
-    
-  point_df <- merge(x = res_tax_sig_abund_long, y = metadata, by = "Sample")
-  point_df$Abundance <- point_df$Count / scale.seq * 100  
+  colnames(sample)[1] <- "Sample"
+  sample <- sample[c("Sample",group)]
+  colnames(sample)[2] <- "Group"
   
-  if (!is.null(tax.display)){
-    point_df <- data.frame(point_df, Display = apply(point_df[,c(tax.display, tax.aggregate)], 1, paste, collapse="; "))
-  }  else {
-    point_df <- data.frame(point_df, Display = point_df[,tax.aggregate])
-  }
-    
-  point_df$Display <- factor(point_df$Display, levels = rev(as.character(unique(point_df$Display))))
+  point_df <- merge(x = abund6, y = sample, by = "Sample") %>%
+    group_by(Sample) %>%
+    arrange(padj)
+  
+  colnames(point_df)[12] <- group
   
   if(!is.null(plot.show)){
-    point_df <- subset(point_df, Display %in% as.character(unique(point_df$Display)[1:plot.show]))
+    point_df <- subset(point_df, Tax %in% as.character(unique(point_df$Tax))[1:plot.show])
   }
   
+  point_df$Tax <- factor(point_df$Tax, levels = rev(as.character(unique(point_df$Tax))[1:plot.show]))
   
-  p2 <-ggplot(data = point_df, aes_string(x = "Display", y = "Abundance", color = group)) +
+  p2 <-ggplot(data = point_df, aes_string(x = "Tax", y = "Abundance", color = group)) +
     labs(x = "", y = "Read Abundance (%)") +
     coord_flip()  
   

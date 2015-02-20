@@ -13,8 +13,6 @@ amp_test_species(data, design)
 
 \item{tax.aggregate}{Group data at specific taxonomic level (default: "OTU").}
 
-\item{tax.display}{Display additional taxonomic levels in the plot output e.g. "Genus".}
-
 \item{sig}{Significance treshold (default: 0.01).}
 
 \item{fold}{Log2fold filter default for displaying significant results (default: 0)}
@@ -30,6 +28,8 @@ amp_test_species(data, design)
 \item{plot.show}{Display the X most significant results.}
 
 \item{plot.point.size}{The size of the plotted points.}
+
+\item{tax.display}{Display additional taxonomic levels in the plot output e.g. "Genus".}
 }
 \value{
 A p-value for each comparison.

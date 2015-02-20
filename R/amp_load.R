@@ -33,6 +33,6 @@ amp_load <- function(otutable, metadata, refseq = NULL, rarefy = NULL){
                      sample_data(metadata))
   }
     
-  if(!is.null(rarefy)){data <- rarefy_even_depth(data, sample.size = 10000, rngseed = 712)}
+  if(!is.null(rarefy)){data <- rarefy_even_depth(data, sample.size = rarefy, rngseed = 712)}
   return(data)
 }
