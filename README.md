@@ -5,6 +5,12 @@ Tools for visualising amplicon sequencing data
 
 ## Changelog
 
+### 1.9.1
+#### Enhancements
+  - amp_ordinate: `plot.shape` can now be used to assign different shapes to points based on a sample variable.
+  - amp_ordinate: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
+  - amp_test_speices: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
+
 ### 1.9.0
 #### Enhancements
   - data: The newest version of the MiDAS data have been included as `data(MiDAS_1.20)`. It includes small updates to the taxonomy and a single sample have been removed (2591) due to wierdness. The OTU names are now locked! Hence, OTUs in this release will have the same name in the next release.

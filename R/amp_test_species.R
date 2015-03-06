@@ -16,6 +16,7 @@
 #' @param plot.type Either "boxplot" or "point" (default: point)
 #' @param plot.show Display the X most significant results.
 #' @param plot.point.size The size of the plotted points.
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A p-value for each comparison.
 #' 
@@ -29,7 +30,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2){
+amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2, plot.theme = "normal"){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -88,8 +89,6 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   res_tax_sig = subset(res_tax, padj < sig & fold < abs(log2FoldChange)) %>%
     arrange(padj)
   
-  if (nrow(res_tax_sig) > 1){  
-  
   ## Plot the data
   ### MA plot
   res_tax$Significant <- ifelse(rownames(res_tax) %in% res_tax_sig$Tax , "Yes", "No")
@@ -99,7 +98,7 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
     geom_point(size = plot.point.size) +
     scale_x_log10() +
     scale_color_manual(values=c("black", "red")) +
-    labs(x = "Mean abundance", y = "Log2 fold change")
+    labs(x = "BaseMean read abundance", y = "Log2 fold change")
   
   
   ### Points plot of significant differential abundant entries
@@ -138,11 +137,42 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
     p2 <- p2 + geom_boxplot(outlier.size=1)
   }
   
-  out <- list(results = res, plot_MA = p1, sig_res = res_tax_sig, plot_sig = p2 , sig_res_plot_data = point_df)
+  
+  clean_res <- mutate(point_df, padj = signif(padj, 2), 
+                      Log2FC = signif(log2FoldChange, 2),
+                      Taxonomy = Tax) %>%
+               group_by(Experiment, Taxonomy, padj, Log2FC) %>%
+               summarise(Avg = round(mean(Abundance), 2)) %>%
+               dcast(Taxonomy+padj+Log2FC~Experiment, value.var = "Avg") %>%
+               arrange(padj)
+  
+  if(plot.theme == "clean"){
+    p1 <- p1 + theme(axis.ticks.length = unit(1, "mm"),
+                   axis.ticks = element_line(color = "black"),
+                   text = element_text(size = 10, color = "black"),
+                   axis.text = element_text(size = 8, color = "black"),
+                   plot.margin = unit(c(0,0,0,0), "mm"),
+                   panel.grid = element_blank(),
+                   legend.key = element_blank(),
+                   panel.background = element_blank(),
+                   axis.line = element_line(color = "black")
+    )
+    
+    p2 <- p2 + theme(axis.ticks.length = unit(1, "mm"),
+                     axis.ticks = element_line(color = "black"),
+                     text = element_text(size = 10, color = "black"),
+                     axis.text = element_text(size = 8, color = "black"),
+                     plot.margin = unit(c(0,0,0,0), "mm"),
+                     panel.grid = element_blank(),
+                     legend.key = element_blank(),
+                     panel.background = element_blank(),
+                     axis.line = element_line(color = "black")                   
+    )
+  }  
+  
+  
+  
+  out <- list(results = res, plot_MA = p1, sig_res = res_tax_sig, plot_sig = p2 , sig_res_plot_data = point_df, clean_res = clean_res)
   
   return(out)
-  } else{
-    print("No significant")
-    return(res)
-  }
 }

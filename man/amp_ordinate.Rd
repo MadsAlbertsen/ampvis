@@ -27,6 +27,8 @@ amp_ordinate(data)
 
 \item{plot.point.size}{Size of the plotted sample points (default: 3)}
 
+\item{plot.shape}{Shape points by a sample variable.}
+
 \item{plot.species}{Plot loadings as points (default: F)}
 
 \item{plot.nspecies}{Plot the n most extreme species with their taxonomic classification (default: 0).}
@@ -47,6 +49,10 @@ amp_ordinate(data)
 
 \item{envfit.resize}{Scale the size of the numeric arrows (default: 1).}
 
+\item{envfit.color}{Color of the envfit text on the plot (default: "darkred").}
+
+\item{envfit.textsize}{Size of the envfit text on the plot (default: 3).}
+
 \item{tax.empty}{Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).}
 
 \item{output}{Either plot or complete (default: "plot").}
@@ -60,6 +66,8 @@ amp_ordinate(data)
 \item{trajectory.group}{Split the trajectory by a group.}
 
 \item{plot.group.label.size}{Text size of the labels.}
+
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 }
 \value{
 A ggplot2 object

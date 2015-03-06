@@ -15,6 +15,7 @@
 #' @param plot.color Color the points by a sample variable.
 #' @param plot.color.order Order the groups used for coloring by a vector.
 #' @param plot.point.size Size of the plotted sample points (default: 3)
+#' @param plot.shape Shape points by a sample variable.
 #' @param plot.species Plot loadings as points (default: F)
 #' @param plot.nspecies Plot the n most extreme species with their taxonomic classification (default: 0).
 #' @param plot.nspecies.tax Taxonomic level used in plot.nspecies (default: "Genus").
@@ -28,9 +29,12 @@
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
 #' @param envfit.resize Scale the size of the numeric arrows (default: 1).
+#' @param envfit.textsize Size of the envfit text on the plot (default: 3).
+#' @param envfit.color Color of the envfit text on the plot (default: "darkred").
 #' @param tax.empty Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).
 #' @param scale.species Rescale the plotted loadings to maximise visability (default: F).
 #' @param output Either plot or complete (default: "plot").
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A ggplot2 object
 #' 
@@ -44,7 +48,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal"){
   
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -189,16 +193,11 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ## Plot  
   
   ### Plot: Basic plot either with or without colors
-  if(is.null(plot.color)){
-    p <- ggplot(combined, aes_string(x = plot.x, y = plot.y))  
-  }
-  if(!is.null(plot.color)){
-    p <- ggplot(combined, aes_string(x = plot.x, y = plot.y, color = plot.color))  
-  }
+  p <- ggplot(combined, aes_string(x = plot.x, y = plot.y, color = plot.color, shape = plot.shape))
   
   ### Plot: Add loadings as points
   if(plot.species == T){
-    p <- p + geom_point(data = species, color = "grey")        
+    p <- p + geom_point(data = species, color = "grey", shape = 20)        
   }
   
   ###Plot: Add trajectory based on e.g. data
@@ -251,13 +250,13 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   ### Plot: Plot the names of the n most extreme species
   if(!is.null(plot.nspecies)){
-    p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = 4)  
+    p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = 4, inherit.aes = F)  
   }
   
   ### Plot: Environmental factors
   if((!is.null(envfit.factor))){
     if (nrow(f.sig) != 0){
-      p <- p + geom_text(data = f.sig, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = "darkred", size = 4, hjust = -0.05, vjust = 1)
+      p <- p + geom_text(data = f.sig, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = envfit.color, size = 4, hjust = -0.05, vjust = 1, inherit.aes = F, size = envfit.textsize)
     }
   }
   
@@ -267,11 +266,11 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
       n.sig[, plot.x] <- n.sig[, plot.x]*envfit.resize
       n.sig[, plot.y] <- n.sig[, plot.y]*envfit.resize
       n.sig2 <- n.sig
-      n.sig2[, plot.x] <- n.sig[, plot.x]*1.1
-      n.sig2[, plot.y] <- n.sig[, plot.y]*1.1
+      n.sig2[, plot.x] <- n.sig[, plot.x]*1.2
+      n.sig2[, plot.y] <- n.sig[, plot.y]*1.2
       
-      p <- p + geom_segment(data=n.sig, aes_string(x = 0, xend = plot.x, y = 0, yend = plot.y),arrow = arrow(length = unit(0.3, "cm")), colour = "darkred", size = 1) +
-        geom_text(data=n.sig2, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = "darkred")
+      p <- p + geom_segment(data=n.sig, aes_string(x = 0, xend = plot.x, y = 0, yend = plot.y),arrow = arrow(length = unit(3, "mm")), colour = "darkred", size = 1 , inherit.aes = F) +
+        geom_text(data=n.sig2, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = envfit.color, inherit.aes = F, size = envfit.textsize)
     }
   }  
   
@@ -280,6 +279,19 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   if (!is.null(plot.label)){
     p <- p + geom_text(aes_string(label=plot.label), size = 3, vjust = 1.5, color = "grey40")
   }  
+  
+  if(plot.theme == "clean"){
+    p <- p + theme(axis.ticks.length = unit(1, "mm"),
+                   axis.ticks = element_line(color = "black"),
+                   text = element_text(size = 10, color = "black"),
+                   axis.text = element_text(size = 8, color = "black"),
+                   plot.margin = unit(c(0,0,0,0), "mm"),
+                   panel.grid = element_blank(),
+                   legend.key = element_blank(),
+                   panel.background = element_blank(),
+                   axis.line = element_line(color = "black")
+    )
+  }
   
   outlist <- append(outlist, list(plot = p))
   

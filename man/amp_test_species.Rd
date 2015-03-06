@@ -29,6 +29,8 @@ amp_test_species(data, design)
 
 \item{plot.point.size}{The size of the plotted points.}
 
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
+
 \item{tax.display}{Display additional taxonomic levels in the plot output e.g. "Genus".}
 }
 \value{

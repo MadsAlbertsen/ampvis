@@ -198,7 +198,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na)
   }
   if (is.null(normalise)){
-    p <- p + labs(x = "", y = "", fill = "Abundance")  
+    p <- p + labs(x = "", y = "", fill = "% Read\nAbundance")  
   }
   if (!is.null(normalise)){
     p <- p + labs(x = "", y = "", fill = "Relative")  
