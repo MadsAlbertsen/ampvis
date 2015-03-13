@@ -1,0 +1,303 @@
+---
+title: "Ampvis basic guide"
+author: "Mads Albertsen"
+date: "March 12, 2015"
+output: html_document
+---
+
+This guide showcase a few of the basic functions in the `ampvis` package. I'm greatfull for the awesome R packages `dplyr`, `vegan`, `ggplot2` and `phyloseq` which makes up the backbone `ampvis`.
+
+# Installation
+
+## Install R, Rtools and Rstudio
+Install the latest version of [R, Rtools](http://www.r-project.org/) and [Rstudio](http://www.rstudio.com/).
+
+## Install ampvis
+A few packages needs to be installed before ampvis can be installed. Make sure you run RStudio as `Administrator` to enable installation of all packages. If you are asked to update packages, then press "a" for all.
+```{r install_packages, eval=FALSE}
+install.packages("devtools")
+source("http://bioconductor.org/biocLite.R")
+biocLite("Biostrings")
+biocLite("DESeq2")
+biocLite("phyloseq")
+```
+
+Ampvis is installed directly from github using the devtools package. 
+```{r install_ampvis, eval=FALSE}
+library("devtools")
+install_github("MadsAlbertsen/ampvis")
+```
+
+# Load ampvis and import data
+
+## Load ampvis
+```{r load_packages, message=FALSE, warning=FALSE}
+library(ampvis)
+```
+
+## Load data
+Ampvis works directly on [phyloseq objects](http://joey711.github.io/phyloseq/). However, for internal compability data generated with [workflow scripts v.4+](https://github.com/MadsAlbertsen/16S-analysis/tree/master/data.generation) can be loaded using the `amp_load` function. It converts the data into a single phyloseq object. 
+```{r load_data, eval=FALSE}
+otutable <- read.delim(file = "data/otutable.txt", sep = "\t", header = T, check.names = F, row.names = 1)
+metadata <- read.delim(file = "data/metadata.txt", header = T, sep = "\t")
+refseq <- readDNAStringSet("data/otus.fa", format = "fasta")
+```
+
+... and then converted to a single phyloseq object using the `amp_load` function.
+```{r load_phyloseq, eval=F}
+d <- amp_load(otutable = otutable, 
+              metadata = metadata, 
+              refseq = refseq)
+```
+
+## MiDAS data
+The [MiDAS dataset](http://midasfieldguide.org/) is directly included in ampvis and can be loaded using the `data()` function.
+```{r load_MiDAS}
+data(MiDAS_1.20)
+```
+
+The data is a phyloseq object with 574 samples from Danish wastewater treatment plants, which have been sampled up to 4 times per year since 2006.
+```{r see_MiDAS}
+MiDAS_1.20
+```
+
+# Analyse the data
+
+## Subset and filtering
+The principle behind ampvis is that you first subset the data to what you want to look at using `phyloseq` and then visualise it using `ampvis`. Samples can be subset based on any available metadata. See the [phyloseq guide](http://joey711.github.io/phyloseq/) for more examples.
+```{r see_variables}
+sample_variables(MiDAS_1.20)
+```
+
+Here we'll subset to samples from the wastewater treatment plants `Aalborg West` and `Aalborg East` using the `Plant` variable in the metadata and store the data in the object `ds`.
+```{r subset_samples}
+ds <- subset_samples(MiDAS_1.20, Plant %in% c("Aalborg West", "Aalborg East"))
+ds
+```
+
+The included data have different number of sequences per sample. If the purpose is to make heatmaps or boxplots, it is reccomended to convert the abundances to percentages instead using the `transform_sample_counts` function.
+```{r normalise_samples}
+dsn <- transform_sample_counts(ds, function(x) x / sum(x) * 100)
+```
+
+If the purpose is to make ordination it is recommended to rarefy to the same number of reads using the `rarefy_even_depth` function.
+```{r rarefy_samples, message=FALSE}
+dsr <- rarefy_even_depth(ds, sample.size = 10000, rngseed = 712)
+```
+
+If doing ordination, it is recommended to first remove low abundant species. This can be done using the `filter_taxa` function from phyloseq. Here we keep OTUs that have been seen more than 9 times (of 10000) in at least 1 sample.
+```{r filter_taxa}
+dsf <- filter_taxa(ds, function(x) max(x) >= 10, TRUE)
+dsf
+```
+
+The data can also be limited to specific taxonomic groups. Here I've limited the analysis to the genus Tetrasphaera using the `subset_taxa` function.
+```{r subset_taxa}
+dsl <- subset_taxa(ds, Genus == "g__Tetrasphaera")
+dsl       
+```
+
+### Chaining it all together
+The above functions can be combined more elegantly in order to make fewer temporary files using the `then` operator `%>%` from the `magrittr` package. It takes the output from a given function and feeds it to the next. It is often called piping or chaining.
+```{r pipe, message=FALSE}
+dsrf <- subset_samples(MiDAS_1.20, Plant %in% c("Aalborg West", "Aalborg East")) %>%
+        rarefy_even_depth(sample.size = 10000, rngseed = 712) %>%
+        filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+## Basic ampvis functions
+
+### Heatmap
+Looking at phylum level (default) on `Aalborg East (AAE)` and `Aalborg West (AAW)` from 2006 to 2013. Proteobacteria have been split into their respective classes. Samples can be grouped based on any metadata variable or combination of vairables. All functions have a basic help file that can be acessed using e.g. `?amp_heatmap`. The `scale.seq` option is used to indicate that we are using percentages instead.
+```{r heatmap1, fig.width=10, fig.height=8, fig.align='center'}
+amp_heatmap(data = dsn, 
+            group = c("Plant", "Year"), 
+            tax.class = "p__Proteobacteria",
+            scale.seq = 100)
+```
+
+The `tax.aggregate` parameter controls which level the taxonomic information is shown on. Here the 25 most abundant genera are shown. The data is sorted based on average abundance across all groups of samples. In addition, we scale the color using log10 instead of the default square root, using the `plot.colorscale` option.
+```{r heatmap2, fig.width=10, fig.height=8, fig.align='center'}
+amp_heatmap(data = dsn, 
+            group = c("Plant", "Year"), 
+            tax.class = "p__Proteobacteria",
+            scale.seq = 100,
+            tax.aggregate = "Genus",
+            tax.show = 25,
+            plot.colorscale = "log10")
+```
+
+You can always add higher taxonomic ranks to the names using the `tax.add` parameter. Here we look at the 25 most abundant OTUs and label each OTU with their respective genus and phylum name. If you don't like the numbers, you can just remove them using the `plot.numbers` option.
+```{r heatmap3, fig.width=12, fig.height=8, fig.align='center'}
+amp_heatmap(data = dsn, 
+            group = c("Plant", "Year"), 
+            tax.class = "p__Proteobacteria",
+            scale.seq = 100,
+            tax.aggregate = "OTU",
+            tax.add = c("Phylum", "Genus"),
+            tax.show = 25,
+            plot.colorscale = "log10",
+            plot.na = T,
+            plot.numbers = F) 
+```
+
+The `amp_heatmap` function always displays the average if multiple samples are present in each group. Here the average composition in `AAW` and `AAE` is shown.
+```{r heatmap3_1, fig.width=8, fig.height=8, fig.align='center'}
+amp_heatmap(data = dsn, 
+            group = "Plant", 
+            tax.class = "p__Proteobacteria",
+            scale.seq = 100,
+            tax.aggregate = "Genus",
+            tax.add = c("Phylum"),
+            tax.show = 25,
+            plot.colorscale = "log10",
+            plot.na = T) 
+```
+
+### Boxplots
+The heatmaps always show the average of the samples. The function `amp_rabund` (short for Rank Abundance) can be used to generate boxplots. The syntax is similar to `amp_heatmap`.
+```{r boxplot1, fig.width=8, fig.height=8, fig.align='center'}
+amp_rabund(data = dsn,
+           tax.aggregate = "Genus",
+           tax.add = "Phylum",
+           scale.seq = 100)
+```
+
+Boxplots can also be grouped.
+```{r boxplot2, fig.width=9, fig.height=4, fig.align='center'}
+amp_rabund(data = dsn,
+           tax.aggregate = "Genus",
+           tax.add = "Phylum", 
+           scale.seq = 100,
+           tax.show = 10,
+           group = "Plant",
+           tax.class = "p__Proteobacteria")
+```
+
+The `amp_rabund` can also be used to generate cumulative rank abundance curves using the `plot.type` variable. These can be used to compare the diversity between samples. I.e. how many OTUs constitute 75% of all reads in the sample.
+```{r boxplot3, fig.width=6, fig.height=5, fig.align='center'}
+amp_rabund(data = dsn,
+           plot.type = "curve",
+           tax.aggregate = "OTU",
+           scale.seq = 100,
+           group = "Plant",
+           plot.log = T)
+```
+
+### PCA
+The function `amp_ordinate` can be used to make simple PCA plots (and NMDS) of your data. Notice that the PCA uses the square root transformed OTU counts directly and not e.g. bray.curtis similarities. The `amp_ordinate` uses the `vegan` package for ordination.
+```{r PCA1A, fig.width=8, fig.height=6, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Plant")
+```
+
+The `plot.group` variable can be used to make the groupings more easy to see.
+```{r PCA1B, fig.width=8, fig.height=6, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Plant", 
+             plot.group = "chull")
+```
+
+There is a large number of ways to visualise the data. Here a few basic options are shown. You can for example add the n most influencial species (using genus classification by default). 
+```{r PCA2, fig.width=7, fig.height=6, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Plant", 
+             plot.group = "chull",
+             plot.nspecies = 10)
+```
+
+The `trajectory` and `trajectory.group` options can be used to trace the development over time of different groups of samples in the same plot. In addtion the group names can be  directly added to the plot using the `plot.group.label`. It plots the name of the group in the centroid of all samples in the group.
+```{r PCA3, fig.width=8, fig.height=6, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Year", 
+             trajectory = "Date", 
+             trajectory.group = "Plant",
+             plot.group.label = "Plant")
+```
+
+All functions have a `plot.theme` option that can be used to change the overall theme of the plots. The `plot.theme = clean` option is often suited for publication. In addition, all plots are `ggplot2` objects and can be easily manipulated. Here, the legend is removed and the limits of the x-axis is changed.
+```{r PCA3B, fig.width=4, fig.height=4, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Year", 
+             trajectory = "Date", 
+             trajectory.group = "Plant",
+             plot.group.label = "Plant",
+             plot.theme = "clean") +
+  theme(legend.position = "none") +
+  xlim(-3,4)
+```
+
+Another option is to test for significance of environmental factors (uses the `vegan` envfit function). Here we also use the `output = "complete"` option to get the data behind the plot, so we can see the significance of the tested variables. Note: envifit only test if there is a correlation to the PC's you display, here PC1 and PC2. There might be correlations hidden in the other PC's.
+```{r PCA4}
+res <- amp_ordinate(data = dsrf, 
+                    plot.color = "Plant", 
+                    envfit.factor = c("Plant","Period"), 
+                    output = "complete")           
+```
+
+You can access plots, data and modelling results in the `res` object. Here we take a look to see if the fitting of Plant and Peroid was significant based on a permutation test.
+```{r PCA4_res}
+res$eff.model
+```
+
+Finally you can constrain the PCA and look for relationships to specific variables. Here we can see that there seem to be a shift in both plants to more Dechloromonas from 2006 to 2013.
+```{r PC5, fig.width=8, fig.height=6, fig.align='center'}
+amp_ordinate(data = dsrf, 
+             plot.color = "Year", 
+             constrain = "Year", 
+             plot.nspecies = 10)
+```
+
+### Core plots
+The `amp_core` function can be used to investigate the core community in your samples. The default plot is a `frequency plot` that groups the OTUs based on how many samples they are seen in. If `weight` is set to `TRUE` then each OTU is weighted by their abundance. 
+```{r core1, fig.width=6, fig.height=5, fig.align='center', message=FALSE}
+amp_core(data = dsn, 
+         plot.type = "frequency", 
+         weight = T,
+         scale.seq = 100)
+```
+
+..if not it simply display the number of OTUs in each group.
+```{r core2, fig.width=6, fig.height=5, fig.align='center', message=FALSE}
+amp_core(data = dsn,
+         plot.type = "frequency", 
+         weight = F)
+```
+
+The `amp_core` function also enables more refined core plots. Here, each OTU is plottted as "Abundant or not" vs. their frequency. I've set the "Abundant cirteira" as 0.1 % abundance.
+```{r core5, fig.width=6, fig.height=5, fig.align='center', message=FALSE}
+amp_core(data=dsn, 
+         plot.type = "core", 
+         abund.treshold = 0.1,
+         scale.seq = 100)
+```
+
+All functions have an option to export the plot and the processed data. This is particulary usefull if you want to get the names and sequences of the "core" species. Here we store the results in the `res` object.
+```{r core6}
+res <- amp_core(data=dsn, 
+                plot.type = "core", 
+                abund.treshold = 0.1, 
+                output = "complete",
+                scale.seq = 100)
+```
+
+The processed data is stored as `data` in the output. Hence, to get the species that are abundant and seen in all samples we filter the data by `Frequency` and `freq_A`. Then we select the data we want to see, and finally sort it based on abundance.
+```{r core7}
+core_OTUs <- filter(res$data, Frequency > 51, freq_A > 51) %>% 
+             select(OTU, Abundance, Phylum, Genus) %>%
+             arrange(desc(Abundance))
+```
+
+```{r print_core}
+print(core_OTUs)
+```
+
+As a last thing we want to extract the OTU sequences for further work. This can be done using the `amp_export` function. It simply takes a phyloseq object and exports the associated sequences. However, first we subset the phyloseq object to our "core OTUs" using the `prune_taxa` function from `phyloseq`.
+```{r export1}
+core_p <- prune_taxa(x = dsn, taxa = as.character(core_OTUs$OTU))
+```
+
+.. then the sequences are exported.
+```{r export2}
+amp_export(data = core_p, file = "my_sequences.fa")
+```
