@@ -1,7 +1,9 @@
 ampvis
 ========
 
-Tools for visualising amplicon sequencing data
+Tools for visualising amplicon sequencing data.
+
+[Start here](http://madsalbertsen.github.io/ampvis)
 
 ## Changelog
 
