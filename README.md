@@ -9,7 +9,10 @@ Tools for visualising amplicon sequencing data
 #### Enhancements
   - amp_ordinate: `plot.shape` can now be used to assign different shapes to points based on a sample variable.
   - amp_ordinate: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
+  - amp_ordinate: The option `envfit.show` can be used to disable showing envfit vectors on the plot.
   - amp_test_speices: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
+  - amp_heatmap: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
+  - amp_test_cluster: Now includes a `plot.theme` option that can be used to make publication friendly images fast.
 
 ### 1.9.0
 #### Enhancements

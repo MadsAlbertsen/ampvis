@@ -121,6 +121,8 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   
   colnames(point_df)[12] <- group
   
+  clean_temp <- point_df
+  
   if(!is.null(plot.show)){
     point_df <- subset(point_df, Tax %in% as.character(unique(point_df$Tax))[1:plot.show])
   }
@@ -138,12 +140,20 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   }
   
   
-  clean_res <- mutate(point_df, padj = signif(padj, 2), 
+  
+  clean_res0 <- merge(abund5, res_tax, by = "Tax") %>% 
+                merge(y = sample, by = "Sample") %>%
+                group_by(Sample) %>%
+                arrange(padj)
+  
+  colnames(clean_res0)[12] <- "group"
+  
+  clean_res <- mutate(clean_res0, padj = signif(padj, 2), 
                       Log2FC = signif(log2FoldChange, 2),
                       Taxonomy = Tax) %>%
-               group_by(Experiment, Taxonomy, padj, Log2FC) %>%
-               summarise(Avg = round(mean(Abundance), 2)) %>%
-               dcast(Taxonomy+padj+Log2FC~Experiment, value.var = "Avg") %>%
+               group_by(group, Taxonomy, padj, Log2FC) %>%
+               summarise(Avg = round(mean(Abundance), 3)) %>%
+               dcast(Taxonomy+padj+Log2FC~group, value.var = "Avg") %>%
                arrange(padj)
   
   if(plot.theme == "clean"){
@@ -152,7 +162,8 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
                    text = element_text(size = 10, color = "black"),
                    axis.text = element_text(size = 8, color = "black"),
                    plot.margin = unit(c(0,0,0,0), "mm"),
-                   panel.grid = element_blank(),
+                   panel.grid.major = element_line(color = "grey95"),
+                   panel.grid.minor = element_blank(),
                    legend.key = element_blank(),
                    panel.background = element_blank(),
                    axis.line = element_line(color = "black")
@@ -163,7 +174,8 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
                      text = element_text(size = 10, color = "black"),
                      axis.text = element_text(size = 8, color = "black"),
                      plot.margin = unit(c(0,0,0,0), "mm"),
-                     panel.grid = element_blank(),
+                     panel.grid.major = element_line(color = "grey95"),
+                     panel.grid.minor = element_blank(),
                      legend.key = element_blank(),
                      panel.background = element_blank(),
                      axis.line = element_line(color = "black")                   

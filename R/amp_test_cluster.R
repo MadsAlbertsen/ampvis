@@ -9,6 +9,7 @@
 #' @param method The distance measure (default: "bray").
 #' @param plot.label A vector specifying the sample data to be used as labels.
 #' @param plot.color A vector specifying the sample data to be used as colors.
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A number of things.
 #' 
@@ -19,7 +20,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, plot.color = NULL){
+amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, plot.color = NULL, plot.theme = "none"){
   
   ## Extract the data from the phyloseq object
   abund <- as.data.frame(otu_table(data)@.Data) %>% t()
@@ -81,6 +82,21 @@ amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, pl
   p1 <- p1 + geom_point(data=hc_d$label, aes(x = x, y = y, color = group), inherit.aes =F, alpha = 0) + 
     scale_color_manual(labels = rev(levels(hc_d$label$group)), values = rev(unique(hc_d$label$color))) +
     guides(colour = guide_legend(override.aes = list(size=3, alpha = 1)))
+  }
+  
+  if(plot.theme == "clean"){
+    p1 <- p1 + theme(text = element_text(size = 8, color = "black"),
+                     axis.text = element_text(size = 8, color = "black"),
+                     axis.text.y = element_text(hjust = 1),
+                     plot.margin = unit(c(0,0,0,0), "mm"),
+                     axis.line = element_line(color = "black"),
+                     axis.line.y = element_blank(),
+                     panel.grid = element_blank(),
+                     legend.key = element_blank(),
+                     axis.ticks = element_line(color = "black"),
+                     axis.ticks.y = element_blank(),
+                     panel.background = element_blank()
+    )
   }
   
   return(list(betad = betad, adonis = res_adonis, hc = hc, plot_cluster = p1))  

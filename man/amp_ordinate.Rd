@@ -53,6 +53,8 @@ amp_ordinate(data)
 
 \item{envfit.textsize}{Size of the envfit text on the plot (default: 3).}
 
+\item{envfit.show}{Show the results on the plot (default: T).}
+
 \item{tax.empty}{Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).}
 
 \item{output}{Either plot or complete (default: "plot").}

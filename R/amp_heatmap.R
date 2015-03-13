@@ -1,6 +1,6 @@
-#' Generates a ggplot2 style heatmap from amplicon data in phyloseq format 
+#' Generate a heatmap from amplicon data
 #'
-#' A nice long description
+#' Generate a heatmap in ggplot2 format from amplicon data in phyloseq format. Use sample metadata to aggregate sampes and taxonomy to aggregate OTUs.
 #'
 #' @usage amp_headtmap(data)
 #'
@@ -20,10 +20,11 @@
 #' @param plot.colorscale Either sqrt or log10 (default: "sqrt")
 #' @param plot.na Wether to color missing values with the lowest color in the scale (default: F).
 #' @param plot.text.size The size of the plotted text (default: 4). 
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param output To output a plot or the complete data inclusive dataframes (default: plot)
 #' 
-#' @return A ggplot2 object or a list with the plot and associated dataframes.
+#' @return A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 #' 
 #' @export
 #' @import ggplot2
@@ -35,7 +36,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4, plot.theme = "normal"){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -202,6 +203,18 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   if (!is.null(normalise)){
     p <- p + labs(x = "", y = "", fill = "Relative")  
+  }
+  
+  if(plot.theme == "clean"){
+    p <- p + theme(legend.position = "none",
+                   axis.text.y = element_text(size = 8, color = "black"),
+                   axis.text.x = element_text(size = 8, color = "black"),
+                   axis.title = element_blank(),
+                   text = element_text(size = 8, color = "black"),
+                   axis.ticks.length = unit(1, "mm"),
+                   plot.margin = unit(c(0,0,0,0), "mm"),
+                   title = element_text(size = 8)
+    )
   }
   
   ## Define the output 

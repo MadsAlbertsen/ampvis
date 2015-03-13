@@ -16,6 +16,8 @@ amp_test_cluster(data, group)
 \item{plot.label}{A vector specifying the sample data to be used as labels.}
 
 \item{plot.color}{A vector specifying the sample data to be used as colors.}
+
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 }
 \value{
 A number of things.

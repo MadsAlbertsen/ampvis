@@ -130,7 +130,7 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
       p <-ggplot(abund7, aes(x = Display, y = Abundance, color = Group))   
     }
     
-    p <- p +  ylab("Read Abundance (%)") + guides(col = guide_legend(reverse = TRUE))
+    p <- p +  ylab("Read Abundance (%)") + guides(col = guide_legend(reverse = TRUE)) + xlab("")
     
     if (plot.flip == F){ p <- p + coord_flip() } else{
       p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))

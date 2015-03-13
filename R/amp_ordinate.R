@@ -31,6 +31,7 @@
 #' @param envfit.resize Scale the size of the numeric arrows (default: 1).
 #' @param envfit.textsize Size of the envfit text on the plot (default: 3).
 #' @param envfit.color Color of the envfit text on the plot (default: "darkred").
+#' @param envfit.show Show the results on the plot (default: T).
 #' @param tax.empty Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).
 #' @param scale.species Rescale the plotted loadings to maximise visability (default: F).
 #' @param output Either plot or complete (default: "plot").
@@ -48,7 +49,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal"){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, envfit.show = T, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal"){
   
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -254,14 +255,14 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   }
   
   ### Plot: Environmental factors
-  if((!is.null(envfit.factor))){
+  if(!is.null(envfit.factor) & envfit.show == T){
     if (nrow(f.sig) != 0){
       p <- p + geom_text(data = f.sig, aes_string(x = plot.x, y = plot.y, label = "Name"), colour = envfit.color, size = 4, hjust = -0.05, vjust = 1, inherit.aes = F, size = envfit.textsize)
     }
   }
   
   ### Plot: Environmental numeric data
-  if(!is.null(envfit.numeric)){
+  if(!is.null(envfit.numeric) & envfit.show == T){
     if (nrow(n.sig) != 0){
       n.sig[, plot.x] <- n.sig[, plot.x]*envfit.resize
       n.sig[, plot.y] <- n.sig[, plot.y]*envfit.resize

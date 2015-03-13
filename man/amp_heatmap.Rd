@@ -2,7 +2,7 @@
 % Please edit documentation in R/amp_heatmap.R
 \name{amp_heatmap}
 \alias{amp_heatmap}
-\title{Generates a ggplot2 style heatmap from amplicon data in phyloseq format}
+\title{Generate a heatmap from amplicon data}
 \usage{
 amp_headtmap(data)
 }
@@ -42,12 +42,14 @@ amp_headtmap(data)
 \item{output}{To output a plot or the complete data inclusive dataframes (default: plot)}
 
 \item{plot.text.size}{The size of the plotted text (default: 4).}
+
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 }
 \value{
-A ggplot2 object or a list with the plot and associated dataframes.
+A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 }
 \description{
-A nice long description
+Generate a heatmap in ggplot2 format from amplicon data in phyloseq format. Use sample metadata to aggregate sampes and taxonomy to aggregate OTUs.
 }
 \author{
 Mads Albertsen \email{MadsAlbertsen85@gmail.com}
