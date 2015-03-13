@@ -1,0 +1,70 @@
+---
+title: "Figure S5 eDNA DESeq2"
+author: "Mads Albertsen"
+date: "March 10, 2015"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+library(gridExtra)
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+# Species affected by eDNA removal
+The DESeq2 package is used to test if any OTUs are in differential abundance after PMA treatment. There is no need to rarefy as DESeq2 handles different sample sizes nice. In addition, all low abundant OTUs are removed.
+```{r subset}
+edna_deseq2 <- subset_samples(V13, Exp.PMA == "YES") %>%
+  subset_taxa(Family != "f__Enterobacteriaceae") %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+To call significant we use an adjusted p-value of `0.001` and an abosolute cutoff of `0.5` log2fold change.
+```{r edna_sig}
+edna_test <- amp_test_species(data = edna_deseq2, 
+                              group= "PMA", 
+                              tax.add=c("Phylum","Genus"),
+                              sig = 0.001, 
+                              fold = 0.5, 
+                              plot.type = "boxplot", 
+                              plot.show = 10,
+                              plot.theme = "clean")
+```
+
+Looking at the MA plot it can be seen that there are some OTUs that are in significant lower abundance after PMA treatment. 
+```{r edna_sig_MA, fig.align='center', fig.height=5, fig.width=6, warning=FALSE, message=FALSE}
+edna_test$plot_MA + 
+  ylim(-4,4) +
+  scale_x_log10(breaks = c(10, 100, 1000)) +
+  theme(legend.key.height = unit(3, "mm"))
+```
+
+```{r save_S5A, eval=FALSE}
+ggsave("plots/S5A.eps", width = 160, height = 140, units = "mm")
+```
+
+`r nrow(edna_test$sig_res)` out of `r nrow(edna_deseq2@otu_table)` OTUs had significantly changed abundance. Looking at the 10 most significantly changed species.
+```{r edna_sig_box, fig.align='center', fig.height=3, fig.width=6, warning=FALSE}
+edna_test$plot_sig +
+  scale_y_log10(breaks = c(0.01,0.1, 1))
+```
+
+```{r save_S5B, eval=FALSE}
+ggsave("plots/S5B.eps", width = 160, height = 60, units = "mm")
+```
+
+Printing the 40 OTUs with most significant changed abundance.
+```{r edna_print, fig.height=8, fig.align='center'}
+grid.table(edna_test$clean_res[1:40,],
+           show.rownames = F, 
+           core.just = "right", 
+           gpar.coretext = gpar(fontsize = 10), 
+           gpar.coltext = gpar(fontsize = 12),
+           padding.v = unit(2, "mm"),
+           padding.h = unit(4, "mm"))
+```

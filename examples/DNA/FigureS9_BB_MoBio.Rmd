@@ -1,0 +1,47 @@
+---
+title: "Figure S9 V13 Bead beating MoBio"
+author: "Mads Albertsen"
+date: "March 10, 2015"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+# MoBio Power Soil (MB)
+```{r subset}
+V13_MB <- subset_samples(V13, Method == "PowerSoil") %>%
+  transform_sample_counts(function(x) x / sum(x) * 100)
+```
+
+## Figure S9: MoBio
+```{r BB_heatmap_percent, fig.align='center', fig.width=2.8, fig.height=3.2}
+amp_heatmap(data = V13_MB,
+            group = "Beadbeating",
+            tax.aggregate = "Phylum",
+            tax.empty = "remove",
+            tax.class = "p__Proteobacteria",
+            order.x = c("40s6ms","160s6ms","400s6ms"),
+            order.y = "400s6ms",
+            plot.colorscale = "log10",
+            plot.breaks = c(2,5,10,20), 
+            scale.seq = 100,
+            tax.show = 11,
+            plot.theme = "clean",
+            plot.text.size = 2
+            ) +
+  scale_x_discrete(labels = c("40s\n6m/s","160s\n6m/s","400s\n6m/s")) +
+  theme(axis.text.x = element_text(size = 8, color = "black", hjust = 0.4, angle = 0))
+
+```
+
+```{r save_S9, eval=FALSE}
+ggsave("plots/S9_Fig.eps", width = 60, height = 70, units = "mm")
+```

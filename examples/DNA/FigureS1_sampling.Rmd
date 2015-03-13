@@ -1,0 +1,126 @@
+---
+title: "Figure S1 Sampling"
+author: "Mads Albertsen"
+date: "March 10, 2015"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+## Subset to the relevant samples
+All samples are subset to 17.000 reads and then only OTUs which are seen at least 10 / 17000 times in a single sample is kept for further ordination analysis.
+```{r subset, message=FALSE}
+rep <- subset_samples(V13, Exp.Biorep == "YES") %>%
+  rarefy_even_depth(sample.size = 17000, rngseed = 712) %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+## Figure S1A: PCA colored by sampling site
+PCA with square root transformed OTU abundances. The effect of sampling from different tanks is tested using the envfit function in vegan (permutation test).
+```{r PCA}
+pca <- amp_ordinate(data = rep, 
+             plot.color = "Add.Label", 
+             plot.point.size = 3,
+             plot.theme = "clean",
+             envfit.factor = "Add.Label",
+             envfit.show = F,             
+             output = "complete"
+             )
+```
+
+It looks like there is no significant groupings.
+```{r pca_plot, fig.align='center', fig.height=3, fig.width=3}
+pca$plot +
+  scale_color_discrete(name = "Sampling site") +
+  theme(legend.position = "none") +
+  xlim(-5,5)
+```
+
+```{r save1, eval=FALSE}
+ggsave("plots/S1A.eps", width = 55, height = 55, units = "mm")
+```
+
+The model reports a p-value of `r pca$eff.model$factors$pvals`, hence there is no effect of sampling from different tanks.
+```{r pca_model}
+pca$eff.model
+```
+
+## Figure S1B: Cluster analysis of beta diversity using Bray-Curtis
+The Bray-Curtis dissimilarity index is used as an alternative method to test for significant groupings in the dataset. 
+```{r beta}
+beta <- amp_test_cluster(data = rep, 
+                         group = "Bio.Rep", 
+                         method = "bray", 
+                         plot.color = "Add.Label", 
+                         plot.label = "Add.Label",
+                         plot.theme = "clean")
+```
+
+Using adonis we do not find a significant effect either as the p-value is `r beta$adonis$aov.tab$"Pr(>F)"[1]`.
+```{r beta_adonis}
+beta$adonis
+```
+
+Clustering the data show a similar trend, no grouping by sampling site.
+```{r beta_cluster, fig.align='center', fig.height=2.8, fig.width=3}
+beta$plot_cluster +
+  theme(legend.position = "none")
+```
+
+```{r save2, eval=FALSE}
+ggsave("plots/S1B.eps", width = 60, height = 55, units = "mm")
+```
+
+## Variation on OTU level
+
+### Subset to the relevant samples
+The samples are subset to 32.000 reads. 1 of 12 biological replicates is discarded as it only had 17.000 reads.
+```{r subset_CI, message=FALSE}
+rr <- subset_samples(V13, Exp.Biorep == "YES") %>%
+  rarefy_even_depth(sample.size = 32000, rngseed = 712) 
+```
+
+## Calculate 95% confidence interval
+The 95% confidence interval for each OTU is calculated in order to compare the variation as a function of sequencing depth. The confidence interval is expressed as % of the mean count in order to compare across sequencing depth. The population standard deviation is estimated from the 11 samples and the confidence interval is calculated using 3 samples.
+```{r calc_rr}
+data <- data.frame(OTU = rownames(otu_table(rr)@.Data), otu_table(rr)@.Data) %>%
+  melt(id.vars = "OTU", value.name = "Count", variable.name = "Sample") %>%
+  group_by(OTU) %>%
+  summarise(Mean = mean(Count),
+            pRR = sd(Count)*qt(0.975,df = n()-1)/mean(Count)*100,
+            pCI3 = (sd(Count)*qt(0.975,df = n()-1)/sqrt(3))/mean(Count)*100)
+```
+
+## Figure S1C: 95% confidence interval as function of mean OTU count
+```{r FigS1C, fig.align='center', fig.width=4, fig.height=4, message=FALSE, warning=FALSE}
+ggplot(data, aes(x = Mean, y = pCI3)) +
+  geom_point(size = 1) +
+  geom_smooth(se = F, color = "darkred", size = 1) +
+  scale_x_log10(limits=c(1,2000), breaks = c(1, 10, 100, 1000)) +
+  ylim(0,200) +
+  xlab("Mean count") +
+  ylab("95% confidence interval as % of mean count") +
+  theme(legend.position = "none",
+        text = element_text(size = 8, color = "black"),
+        axis.text = element_text(size = 8, color = "black"),
+        axis.text.y = element_text(hjust = 1),
+        plot.margin = unit(c(0,0,0,0), "mm"),
+        axis.line = element_line(color = "black"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey95"),
+        axis.ticks = element_line(color = "black"),
+        panel.background = element_blank()
+        )
+```
+
+```{r save3, eval=FALSE}
+ggsave("plots/S1C.eps", width = 100, height = 100, units = "mm")
+```

@@ -1,0 +1,95 @@
+---
+title: "Figure 3B Primer Comparison Alpha Diversity"
+author: "Mads Albertsen"
+date: "March 9, 2015"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+library("gridExtra")
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+# Alpha diversity
+
+## Subset to the relevant datasets
+```{r subset_richness}
+V13r <- subset_samples(V13,Exp.beadbeating == "YES" & Beadbeating == "160s6ms") %>%
+  rarefy_even_depth(sample.size = 85000, rngseed = 712)
+V34r <- rarefy_even_depth(V34, sample.size = 85000, rngseed = 712)
+V4r <- subset_samples(V4,Exp.beadbeating == "YES" & Beadbeating == "160s6ms") %>%
+  rarefy_even_depth(sample.size = 85000, rngseed = 712)
+```
+
+## Richness estimates
+```{r richness}
+V13_richness <- estimate_richness(V13r)
+V34_richness <- estimate_richness(V34r)
+V4_richness <- estimate_richness(V4r)
+
+richness <- rbind.data.frame(V13_richness, V34_richness, V4_richness)
+richness$Primer <- c(rep("V1-3", 3), rep("V3-4", 3),rep("V4", 3))
+
+ri <- group_by(richness, Primer) %>%
+  summarise(Chao1 = round(mean(Chao1),0), 
+            ACE = round(mean(ACE),0), 
+            Shannon = round(mean(Shannon),1))
+
+ri_table <- data.frame(ri[,-1], row.names = ri$Primer)
+
+print(ri_table, rownames = F)
+```
+
+## Rankabundance curves
+```{r rankabundance}
+V13_curve <- amp_rabund(data = V13r, scale.seq = 85000, tax.aggregate = "OTU", plot.type = "curve", output = "complete") 
+V34_curve <- amp_rabund(data = V34r, scale.seq = 85000, tax.aggregate = "OTU", plot.type = "curve", output = "complete")
+V4_curve <- amp_rabund(data = V4r, scale.seq = 85000, tax.aggregate = "OTU", plot.type = "curve", output = "complete")
+
+curve <- rbind.data.frame(V13_curve$data, V34_curve$data, V4_curve$data)
+group <- data.frame(Group = levels(curve$Group), Primer = c(rep("V1-3", 3),rep("V3-4", 3),rep("V4", 3)))
+curve <- merge(curve, group, by = "Group")
+```
+
+## Figure 3B: Richness
+```{r Fig3B, fig.align='center', fig.width=8, fig.height=7, eval=FALSE}
+cols <- hcl(h=seq(15, 375, length=4), l=65, c=100)[1:3]
+
+ggplot(data = curve, aes(x=Rank, y = Cumsum, color = Primer, group = Group)) +
+  geom_line() +
+  scale_x_continuous(limits=c(1,1500), breaks = c(1, 100, 500, 1000, 1500)) +
+  ylim(0, 100) +
+  xlab("OTU rank abundance") +
+  ylab("Cumulative read abundance (%)") +   
+  annotation_custom(tableGrob(ri_table, 
+                              gpar.coretext = gpar(fontsize = 8),
+                              gpar.rowtext = gpar(fontsize = 8),
+                              gpar.coltext = gpar(fontsize = 8)
+                              ), 
+                    xmin=500, xmax=1500, ymin=0, ymax=50) +
+  annotate("text", x = c(50,50,50), y = c(100,95,90), label = c("V1-3","V3-4","V4"), size = 3, color = cols, hjust = 0) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(hjust = 0.5, size = 8, color = "black"),
+        axis.text.y = element_text(size = 8, color = "black"),
+        axis.title.y = element_text(vjust = 1, size = 8),
+        axis.title.x = element_text(size = 8),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = "black"),
+        title = element_text(size = 8),
+        plot.margin = unit(c(0,0,0,0), "mm"),
+        axis.ticks.length = unit(1, "mm"),
+        axis.ticks = element_line(color = "black")
+   )
+```
+
+## Save the plot
+```{r save1, eval=FALSE}
+ggsave("plots/Fig3B.eps", width = 80, height = 70, units = "mm")
+```
