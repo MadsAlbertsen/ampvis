@@ -4,7 +4,7 @@
 #'
 #' @usage amp_rename(data)
 #'
-#' @param data (required) A phyloseq object.
+#' @param data (required) A ampvis formated list with all data.
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param tax.empty Either "remove" OTUs without taxonomic information at X level, with "best" classification or add the "OTU" name (default: best).
 #' @param tax.level The taxonomic level to remove OTUs with empty taxonomy, only used when tax.empty = "remove" (default: Genus).

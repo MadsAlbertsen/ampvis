@@ -16,6 +16,8 @@
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
 #' @param plot.type Either point, boxplot or curve (default: boxplot).
 #' @param plot.flip Flip the axis of the plot (default: F).
+#' @param plot.log Log10 scale the data (default: F)
+#' @param adjust.zero Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.
 #' @param point.size Size of points (default: 2).
 #' @param output Either plot or complete (default: "plot").
 #' @param sort.by Sort the boxplot by either Median, Mean or Total (default = "Median")
@@ -32,7 +34,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -117,6 +119,11 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     
     ## Scale to a specific abundance
     abund7$Abundance <- abund7$Abundance/scale.seq*100
+    
+    ## Add a small constant to handle ggplot2 removal of 0 values in log scaled plots
+    if(!is.null(adjust.zero)){
+      abund7$Abundance[abund7$Abundance==0] <- adjust.zero
+    }
     
     ## plot the data
     

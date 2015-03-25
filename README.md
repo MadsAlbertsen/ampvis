@@ -7,6 +7,10 @@ Tools for visualising amplicon sequencing data.
 
 ## Changelog
 
+### 1.9.2
+#### Bugfixes
+  - amp_rabund: ggplot2 removes 0 values when using log10 scales - as you cant take log10(0). This means that the boxplots are not showing the correct median of the complete dataset. The parameter `adjust.zero` can be used to add a small constant to all OTU abundances that are 0 in order to display the correct median values when using log scales.
+
 ### 1.9.1
 #### Enhancements
   - amp_ordinate: `plot.shape` can now be used to assign different shapes to points based on a sample variable.
