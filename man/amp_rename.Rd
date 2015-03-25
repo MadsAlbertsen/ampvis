@@ -7,7 +7,7 @@
 amp_rename(data)
 }
 \arguments{
-\item{data}{(required) A phyloseq object.}
+\item{data}{(required) A ampvis formated list with all data.}
 
 \item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
 

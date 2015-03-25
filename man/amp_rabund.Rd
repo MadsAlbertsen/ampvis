@@ -21,6 +21,8 @@ amp_rabund(data)
 
 \item{plot.type}{Either point, boxplot or curve (default: boxplot).}
 
+\item{plot.log}{Log10 scale the data (default: F)}
+
 \item{output}{Either plot or complete (default: "plot").}
 
 \item{tax.add}{Additional taxonomic levels to display for each entry (default: Phylum)}
@@ -36,6 +38,8 @@ amp_rabund(data)
 \item{plot.flip}{Flip the axis of the plot (default: F).}
 
 \item{sort.by}{Sort the boxplot by either Median, Mean or Total (default = "Median")}
+
+\item{adjust.zero}{Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.}
 }
 \value{
 A ggplot2 object
