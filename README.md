@@ -7,9 +7,18 @@ Tools for visualising amplicon sequencing data.
 
 ## Changelog
 
+### 1.10.0
+#### Enhancements
+  - amp_function: Make a function table sorted by an input heatmap.
+  - data: The current version of the online MiDAS function data is now included (2015-04-24). It's used by `amp_function`, but can also be loaded manually using `data(MiF)`.
+
 ### 1.9.2
+#### Enhancements
+  - amp_heatmap: Now allows calculation of max values using the `calc` option. Default is still mean.
+  - amp_export: Now supports export of the taxonomic string in the header using the `tax` option. 
+
 #### Bugfixes
-  - amp_rabund: ggplot2 removes 0 values when using log10 scales - as you cant take log10(0). This means that the boxplots are not showing the correct median of the complete dataset. The parameter `adjust.zero` can be used to add a small constant to all OTU abundances that are 0 in order to display the correct median values when using log scales.
+  - amp_rabund: ggplot2 removes 0 values when using log10 scales - as you cant take log10(0).. This means that the boxplots are not showing the correct median of the complete dataset. The parameter `adjust.zero` can be used to add a small constant to all OTU abundances that are 0 in order to display the correct median values when using log scales.
 
 ### 1.9.1
 #### Enhancements

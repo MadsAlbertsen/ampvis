@@ -3,6 +3,7 @@
 export(amp_core)
 export(amp_correlation)
 export(amp_export)
+export(amp_function)
 export(amp_heatmap)
 export(amp_load)
 export(amp_ordinate)

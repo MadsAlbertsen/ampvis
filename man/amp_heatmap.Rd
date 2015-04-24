@@ -44,6 +44,8 @@ amp_headtmap(data)
 \item{plot.text.size}{The size of the plotted text (default: 4).}
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
+
+\item{calc}{Calculate and display mean or max across the groups (default: "mean").}
 }
 \value{
 A ggplot2 object or a list with the ggplot2 object and associated dataframes.

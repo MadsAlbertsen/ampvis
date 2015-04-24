@@ -8,6 +8,10 @@ amp_export(data)
 }
 \arguments{
 \item{data}{(required) A phyloseq object.}
+
+\item{file}{Name of the file containing the exported sequences.}
+
+\item{tax}{Add taxonomic strings to the output (default: T).}
 }
 \description{
 Export sequences from a phyloseq object

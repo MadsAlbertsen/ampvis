@@ -13,6 +13,7 @@
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
+#' @param calc Calculate and display mean or max across the groups (default: "mean").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by.
 #' @param plot.numbers Plot the values on the heatmap (default: T)
@@ -36,7 +37,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4, plot.theme = "normal"){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean"){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -90,15 +91,35 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   )
   
   ## Take the average to group level
-  abund6 <- data.table(abund5)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
-            setkey(Display, Group) %>%
-            unique() %>% 
-            as.data.frame()
+  
+  if (calc == "mean"){
+    abund6 <- data.table(abund5)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
+              setkey(Display, Group) %>%
+              unique() %>% 
+              as.data.frame()
+  }
+  
+  if (calc == "max"){
+      abund6 <- data.table(abund5)[, Abundance:=max(sum), by=list(Display, Group)] %>%
+        setkey(Display, Group) %>%
+        unique() %>% 
+        as.data.frame()
+  }  
+  
   
   ## Find the X most abundant levels
-  TotalCounts <- group_by(abund6, Display) %>%
-    summarise(Abundance = sum(Abundance)) %>%
-    arrange(desc(Abundance))
+  if (calc == "mean"){
+      TotalCounts <- group_by(abund6, Display) %>%
+        summarise(Abundance = sum(Abundance)) %>%
+        arrange(desc(Abundance))
+  }
+  
+  if (calc == "max"){
+    TotalCounts <- group_by(abund6, Display) %>%
+      summarise(Abundance = max(Abundance)) %>%
+      arrange(desc(Abundance))
+  }
+  
   
   ## Subset to X most abundant levels
   if (is.numeric(tax.show)){
