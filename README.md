@@ -7,6 +7,10 @@ Tools for visualising amplicon sequencing data.
 
 ## Changelog
 
+### 1.11.0
+#### Enhancements
+  - amp_stability: Calculate and plot overall similarity between samples in timeseries.
+
 ### 1.10.0
 #### Enhancements
   - amp_function: Make a function table sorted by an input heatmap.

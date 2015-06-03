@@ -14,6 +14,8 @@ amp_function(heatmap)
 \item{adjust}{Adjust the whitespace added in the bottom of the plot in mm (default: 10).}
 
 \item{genus.pos}{Specify which part of the name that contains the genus name (default: 1).}
+
+\item{point.size}{Size of the plotted points (default: 6)}
 }
 \value{
 A ggplot2 object.

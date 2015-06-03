@@ -8,6 +8,7 @@
 #' @param functions A data frame that associates functions with a genus names (default: MiDAS).
 #' @param adjust Adjust the whitespace added in the bottom of the plot in mm (default: 10).
 #' @param genus.pos Specify which part of the name that contains the genus name (default: 1).
+#' @param point.size Size of the plotted points (default: 6)
 #' 
 #' @return A ggplot2 object.
 #' 
@@ -19,7 +20,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_function <- function(heatmap, functions = NULL, adjust = 10, genus.pos = 1){
+amp_function <- function(heatmap, functions = NULL, adjust = 10, genus.pos = 1, point.size = 6){
   
   # Retrive the genus names from the plot
   names <- data.frame(do.call('rbind', strsplit(levels(droplevels(heatmap$data$Display)),'; ',fixed=TRUE)))
@@ -53,7 +54,7 @@ amp_function <- function(heatmap, functions = NULL, adjust = 10, genus.pos = 1){
   # Generate the plot
   
   p <- ggplot(nameFuncM, aes(x = Function, y = Genus, color = Value)) +
-    geom_point(size = 6) +
+    geom_point(size = point.size) +
     scale_color_manual(values = c(POS, VAR, NEG, NT), drop = F) +
     theme(axis.text.x = element_text(size = 12, color = "black", angle = 90, hjust = 1, vjust = 0.4),
           axis.text.y = element_blank(),
