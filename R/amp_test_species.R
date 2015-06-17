@@ -30,9 +30,6 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-library(BiocParallel)
-register(MulticoreParam(10))
-
 amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2, plot.theme = "normal"){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
