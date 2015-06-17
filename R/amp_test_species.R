@@ -30,6 +30,9 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
+library(BiocParallel)
+register(MulticoreParam(10))
+
 amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2, plot.theme = "normal"){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -80,7 +83,7 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   #data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)
   
   ## Test for significant differential abundance
-  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType)
+  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType, parallel=10)
   
   ## Extract the results
   res = results(data_deseq_test, cooksCutoff = FALSE)  
