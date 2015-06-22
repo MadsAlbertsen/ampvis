@@ -15,7 +15,7 @@ amp_headtmap(data)
 
 \item{scale}{A variable from the associated sample data to scale the abundance by.}
 
-\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (defualt: Phylum)}
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: Phylum)}
 
 \item{tax.add}{Additional taxonomic levels to display for each entry e.g. "Phylum" (default: none)}
 
@@ -35,7 +35,7 @@ amp_headtmap(data)
 
 \item{plot.colorscale}{Either sqrt or log10 (default: "sqrt")}
 
-\item{plot.na}{Wether to color missing values with the lowest color in the scale (default: F).}
+\item{plot.na}{Whether to color missing values with the lowest color in the scale (default: F).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 
