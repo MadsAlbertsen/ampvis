@@ -62,7 +62,6 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   data <- amp_rename(data = data, tax.empty = tax.empty)
   
   
-  
   ## Extract the data into seperate objects for readability
   abund <- data[["abund"]]  
   tax <- data[["tax"]]
@@ -70,6 +69,15 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   outlist <- list(abundance = abund, taxonomy = tax, sampledata = sample)
   
+  if (length(trajectory.group) > 1){
+    sample$TrajGroup <- do.call(paste, c(as.list(sample[,trajectory.group]), sep=" "))
+    trajectory.group <- "TrajGroup"
+  }
+  
+  if (length(plot.color) > 1){
+    sample$ColorGroup <- do.call(paste, c(as.list(sample[,plot.color]), sep=" "))
+    plot.color <- "ColorGroup"
+  }
   
   ## Scale the data
   if (!is.null(scale)){

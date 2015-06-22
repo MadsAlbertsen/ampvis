@@ -8,7 +8,7 @@
 #' @param group A variable from the associated sample data to group samples by.
 #' @param scale A variable from the associated sample data to scale the abundance by.
 #' @param normalise A specific sample or group to normalise the counts to, or "relative".
-#' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: Phylum)
+#' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: Phylum)
 #' @param tax.add Additional taxonomic levels to display for each entry e.g. "Phylum" (default: none) 
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
@@ -19,7 +19,7 @@
 #' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
 #' @param plot.colorscale Either sqrt or log10 (default: "sqrt")
-#' @param plot.na Wether to color missing values with the lowest color in the scale (default: F).
+#' @param plot.na Whether to color missing values with the lowest color in the scale (default: F).
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
@@ -82,6 +82,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     if (group != "Sample"){
       if (length(group) > 1){
         grp <- data.frame(Sample = rownames(sample), Group = apply(sample[,group], 1, paste, collapse = " ")) 
+        oldGroup <- unique(cbind.data.frame(sample[,group], Group = grp$Group))
       } else{
         grp <- data.frame(Sample = rownames(sample), Group = sample[,group]) 
       }
@@ -200,6 +201,8 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   if (is.null(scale) & is.null(normalise)){
     abund7[,3] <- abund7[,3]/scale.seq*100
   }
+  
+  if (length(group) > 1 ){ abund7 <- merge(abund7, oldGroup)}
   
   ## Make a heatmap style plot
   p <- ggplot(abund7, aes_string(x = "Group", y = "Display", label = formatC("Abundance", format = "f", digits = 1))) +     

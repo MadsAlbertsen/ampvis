@@ -80,7 +80,7 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   #data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)
   
   ## Test for significant differential abundance
-  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType)
+  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType, parallel = T)
   
   ## Extract the results
   res = results(data_deseq_test, cooksCutoff = FALSE)  

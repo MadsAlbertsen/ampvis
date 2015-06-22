@@ -7,6 +7,16 @@ Tools for visualising amplicon sequencing data.
 
 ## Changelog
 
+### 1.12.0
+#### Enhancements
+  - amp_stability: `group` now supports a vector of parameters.
+  - amp_stability: The individual parametes in group can now be used in `facet_wrap`.
+  - amp_test_species: Enabled the parallel option in DESeq2 (thanks to: @mdehollander).
+  - amp_heatmap: The individual parametes in group can now be used in `facet_wrap`.
+
+#### Bug fixes
+  - amp_stability: Now works as intended with replicates.
+
 ### 1.11.0
 #### Enhancements
   - amp_stability: Calculate and plot overall similarity between samples in timeseries.
