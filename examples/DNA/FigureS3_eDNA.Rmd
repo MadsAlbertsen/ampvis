@@ -1,0 +1,177 @@
+---
+title: "Figure S3 eDNA"
+author: "Mads Albertsen"
+date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+## Check that we were able to remove spike in DNA from e.coli
+```{r subset}
+ecoli <- subset_samples(V13, Exp.PMA == "YES") %>%
+  rarefy_even_depth(sample.size = 25000, rngseed = 712) %>%
+  subset_taxa(Family == "f__Enterobacteriaceae")
+```
+
+We did sequence some of the spiked in DNA.
+```{r ecoli_spike, fig.align='center', fig.height=2, fig.width=6}
+amp_heatmap(ecoli, group = c("PMA","E.coli"), tax.aggregate = "Family", scale.seq = 25000) +
+  scale_x_discrete(labels = c("0%", "20%","40%","50%","0%\nPMA","20%\nPMA","40%\nPMA","50%\nPMA")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 0, hjust = 0.3))
+```
+
+## Overall differences between samples
+### Remove spiked in e.coli
+Remove e.coli and rarefy to even depth in order to use ordination afterwards. In addition, low abundant OTUs are removed.
+```{r subset_ecoli_clean}
+edna_clean_rare <- subset_samples(V13, Exp.PMA == "YES") %>%
+  subset_taxa(Family != "f__Enterobacteriaceae") %>%
+  rarefy_even_depth(sample.size=25000, rngseed=712) %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+## Figure S3C: PCA colored by PMA treatment
+```{r edna_PCA}
+pca <- amp_ordinate(data = edna_clean_rare, 
+             plot.color = "PMA",             
+             plot.point.size = 3,
+             envfit.factor = "PMA",
+             envfit.show = F,
+             output = "complete",
+             plot.theme = "clean"
+             )
+```
+
+It looks like there is significant groupings.
+```{r edna_pca_plot, fig.align='center', fig.height=3, fig.width=4}
+pca$plot +
+    theme(legend.key.height = unit(3, "mm"))
+```
+
+```{r save_S3C, eval=FALSE}
+ggsave("plots/S4C.eps", width = 80, height = 55, units = "mm")
+```
+
+The model reports a p-value of `r pca$eff.model$factors$pvals`, hence there is a significant effect of PMA treatment.
+```{r edna_pca_model}
+pca$eff.model
+```
+
+## Figure S4D: Cluster analysis of beta diversity using Bray-Curtis
+The Bray-Curtis dissimilarity index is used as an alternative method to test for significant groupings in the dataset. 
+```{r beta}
+beta <- amp_test_cluster(data = edna_clean_rare, 
+                         group = "PMA", 
+                         method = "bray", 
+                         plot.color = "PMA", 
+                         plot.label = "PMA",
+                         plot.theme = "clean")
+```
+
+Using adonis we also see a significant effect of eDNA removal as the p-value is `r beta$adonis$aov.tab$"Pr(>F)"[1]`.
+```{r beta_adonis}
+beta$adonis
+```
+
+Clustering also shows that there is a significant effect.
+```{r beta_cluster, fig.align='center', fig.height=3, fig.width=4}
+beta$plot_cluster +
+  theme(legend.position = "none")
+```
+
+```{r save_S3D, eval=FALSE}
+ggsave("plots/S3D.eps", width = 60, height = 55, units = "mm")
+```
+
+## Figure S3E: Variance compared to time-series data
+```{r edna_time}
+edna_time <- subset_samples(V13, (Exp.PMA == "YES" & E.coli == "0 %") | Exp.time == "YES") %>%
+  rarefy_even_depth(sample.size=25000, rngseed=712) %>%
+  filter_taxa(function(x) max(x) > 10, TRUE)
+```
+
+There seem to a quite large effect also compared to the varience over time.
+```{r edna_time_PCA, fig.align='center', fig.height=3, fig.width=5}
+amp_ordinate(data = edna_time, 
+             plot.color = "Date",             
+             plot.point.size = 3,
+             plot.theme = "clean"
+             ) +
+  scale_color_discrete(name = "Sampling date") +
+  theme(legend.key.height = unit(3, "mm"))
+```
+
+```{r save_S3E, eval=FALSE}
+ggsave("plots/S3E.eps", width = 90, height = 55, units = "mm")
+```
+
+## Figure S3F: Using clustering to estimate classification resolution
+```{r beta_time}
+beta_time <- amp_test_cluster(data = edna_time, 
+                              group = "Date", 
+                              method = "bray", 
+                              plot.color = "Date", 
+                              plot.label = "PMA",
+                              plot.theme = "clean")
+```
+
+The PMA treated samples are still most closely related to the samples from the same timepoint. However, they are clearly disinct and the difference seem to be much larger than the weekly variance.
+```{r beta_time_plot, fig.align='center', fig.height=3, fig.width=4}
+beta_time$plot_cluster +
+  theme(legend.position = "none")
+```
+
+```{r save_S3F, eval=FALSE}
+ggsave("plots/S3F.eps", width = 60, height = 55, units = "mm")
+```
+
+## Figure S3B: Impact of eDNA removal on Alpha-diversity
+
+Subset to the relevant dataset and remove e.coli spike in.
+```{r edna_alpha_subset}
+edna_alpha <- subset_samples(V13, Exp.PMA == "YES") %>%
+  subset_taxa(Family != "f__Enterobacteriaceae") %>%
+  rarefy_even_depth(sample.size = 25000, rngseed = 712)
+```
+
+Calculate alpha diverisity.
+```{r edna_alpha_richness}
+alpha <- cbind.data.frame(estimate_richness(edna_alpha), sample_data(edna_alpha))
+```
+
+Make a simple t-test.
+```{r edna_alpha_ttest}
+t.test(alpha$Observed~alpha$PMA)
+```
+
+Plot the data.
+```{r edna_alpha_plot, fig.align='center', fig.width= 3, fig.height= 3}
+ggplot(data = alpha, aes(y = Observed, x = PMA)) +
+  geom_boxplot() + 
+  geom_jitter(color = "darkred", size = 1) +
+  ylab("Observed number of OTUs") +
+  xlab("PMA treatment") +
+  theme(legend.position = "none",
+      text = element_text(size = 8, color = "black"),
+      axis.text = element_text(size = 8, color = "black"),
+      axis.text.y = element_text(hjust = 1, size = 6),
+      plot.margin = unit(c(0,0,0,0), "mm"),
+      axis.line = element_line(color = "black"),
+      panel.grid = element_blank(),
+      axis.ticks = element_line(color = "black"),
+      panel.background = element_blank())
+```
+
+```{r save_S3B, eval=FALSE}
+ggsave("plots/S3B.eps", width = 60, height = 55, units = "mm")
+```

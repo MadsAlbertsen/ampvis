@@ -1,0 +1,156 @@
+---
+title: "Figure S1 Timeseries"
+author: "Mads Albertsen"
+date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output: html_document
+---
+
+## Load packages
+```{r Load_packages, message=FALSE, warning=FALSE, results='hide'}
+library("ampvis")
+```
+
+## Load data
+```{r load_data}
+data(DNAext_1.0)
+```
+
+## Subset to the relevant dataset
+All samples are subset to 25.000 reads and then only OTUs which are seen at least 10 / 25000 times in a single sample is kept for further ordination analysis.
+```{r subset, message=FALSE}
+time <- subset_samples(V13, Exp.time == "YES") %>%
+  rarefy_even_depth(sample.size = 25000, rngseed = 712) %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+## Figure S1A: PCA colored by Sampling Date
+PCA with square root transformed OTU abundances. The effect of sampling from different tanks is tested using the envfit function in vegan (permutation test).
+```{r PCA}
+pca <- amp_ordinate(data = time, 
+                    plot.color = "Date", 
+                    plot.point.size = 3,
+                    plot.theme = "clean",
+                    envfit.factor = "Date",
+                    envfit.show = F,
+                    output = "complete")
+```
+
+Plot the data. It looks like there is significant groupings.
+```{r pca_plot, fig.align='center', fig.height=3, fig.width=3}
+pca$plot +
+  theme(legend.position = "none")
+```
+
+```{r save_S1A, eval=FALSE}
+ggsave("plots/S1A.eps", width = 55, height = 55, units = "mm")
+```
+
+The model reports a p-value of `r pca$eff.model$factors$pvals`, hence there is an effect of time.
+```{r pca_model}
+pca$eff.model
+```
+
+## Figure S1B: Cluster analysis of beta diversity using Bray-Curtis
+The Bray-Curtis dissimilarity index is used as an alternative method to test for significant groupings in the dataset. 
+```{r beta}
+beta <- amp_test_cluster(data = time, 
+                         group = "Date", 
+                         method = "bray", 
+                         plot.color = "Date", 
+                         plot.label = "Date",
+                         plot.theme = "clean")
+```
+
+Using adonis we also find a significant effect of time as the p-value is `r beta$adonis$aov.tab$"Pr(>F)"[1]`.
+```{r beta_adonis}
+beta$adonis
+```
+
+Clustering the data show a very nice grouping by time. Except the two first time-points two weeks appart all time-points cluster separately.
+```{r beta_cluster, fig.align='center', fig.height=3, fig.width=4}
+beta$plot_cluster +
+  theme(legend.position = "none")
+```
+
+```{r save_S1B, eval=FALSE}
+ggsave("plots/S1B.eps", width = 60, height = 55, units = "mm")
+```
+
+## Difference between samples only weeks appart
+```{r subset_weeks, message=FALSE}
+time_weeks <- subset_samples(time, Date %in% c("2012-10-17", "2012-10-31", "2012-11-14")) %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+```{r PCA_weeks}
+pca_weeks <- amp_ordinate(data = time_weeks, 
+             plot.color = "Date", 
+             plot.point.size = 3,
+             plot.theme = "clean",
+             envfit.factor = "Date",
+             envfit.show = F,
+             output = "complete"
+             )
+```
+
+Plot the data. It looks like there is significant groupings even when looking at a time-scale of weeks.
+```{r pca_weeks_plot, fig.align='center', fig.height=3, fig.width=4}
+pca_weeks$plot
+```
+
+The model reports a p-value of `r pca_weeks$eff.model$factors$pvals`, showing there is an significant differnce between samples taken only weeks appart.
+```{r rep_pca_model}
+pca_weeks$eff.model
+```
+
+## Difference between samples only weeks using beta diversity
+The Bray-Curtis dissimilarity index is used as an alternative method to test for significant groupings in the dataset. 
+```{r beta_time_week}
+beta_weeks <- amp_test_cluster(data = time_weeks, 
+                               group = "Date", 
+                               method = "bray", 
+                               plot.color = "Date", 
+                               plot.label = "Date",
+                               plot.theme = "clean")
+```
+
+Using adonis we also find a significant effect of weekly sampling as the p-value is `r beta_weeks$adonis$aov.tab$"Pr(>F)"[1]`.
+```{r beta_adonis_week}
+beta_weeks$adonis
+```
+
+Looking at the clustering it seems like the we can't distinguish between samples from the two first timepoints (2012-10-17 and 2012-10-31). However, they are quite different from the timpoint 2 weeks later.
+```{r beta_cluster_week, fig.align='center', fig.height=3, fig.width=4}
+beta_weeks$plot_cluster
+```
+
+## Variation compared to another WWTP
+```{r subset_plant, message=FALSE}
+time_plant <- subset_samples(V13, Exp.time == "YES" | Plant == "AAE") %>%
+  rarefy_even_depth(sample.size = 25000, rngseed = 712) %>%
+  filter_taxa(function(x) max(x) >= 10, TRUE)
+```
+
+The major difference is plants and the second axis explain the differences related to the time-series.
+```{r PCA_plant, fig.align='center', fig.height=4, fig.width=5}
+amp_ordinate(data = time_plant, 
+             plot.color = "Date", 
+             plot.shape = "Plant",
+             plot.point.size = 3,
+             plot.theme = "clean"
+             )
+```
+
+The Bray-Curtis dissimilarity index is used as an alternative method to test for significant groupings in the dataset. 
+```{r beta_time_plant}
+beta_plant <- amp_test_cluster(data = time_plant, 
+                               group = "Date", 
+                               method = "bray", 
+                               plot.color = "Date", 
+                               plot.label = c("Date","Plant"),
+                               plot.theme = "clean")
+```
+
+```{r beta_time_plant_cluster, fig.height=3, fig.width=4, fig.align='center'}
+beta_plant$plot_cluster
+```
