@@ -22,6 +22,8 @@ amp_stability(data)
 \item{method}{Dissimilarity index from vegdist (default: "bray").}
 
 \item{color}{Color the plots based on 1 of the grouping variables (default: unique colors).}
+
+\item{order}{Vector to order the groups by,}
 }
 \description{
 A nice long description.

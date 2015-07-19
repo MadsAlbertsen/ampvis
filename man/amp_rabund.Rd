@@ -40,6 +40,8 @@ amp_rabund(data)
 \item{sort.by}{Sort the boxplot by either Median, Mean or Total (default = "Median")}
 
 \item{adjust.zero}{Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.}
+
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 }
 \value{
 A ggplot2 object

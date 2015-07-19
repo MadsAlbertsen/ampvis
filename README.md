@@ -5,7 +5,17 @@ Tools for visualising amplicon sequencing data.
 
 [Start here](http://madsalbertsen.github.io/ampvis)
 
+To cite ampvis please use:
+
+Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
+
 ## Changelog
+
+### 1.13.0
+#### Enhancements
+ - amp_export_table: New function to export an otutable from a phyloseq object.
+ - amp_rabund: Added plot.theme functionallity.
+ - added citation information.
 
 ### 1.12.0
 #### Enhancements

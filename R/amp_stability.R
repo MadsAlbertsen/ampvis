@@ -9,6 +9,7 @@
 #' @param group Split the dataset into selected groups using a metadata variable.
 #' @param method Dissimilarity index from vegdist (default: "bray").
 #' @param color Color the plots based on 1 of the grouping variables (default: unique colors).
+#' @param order Vector to order the groups by,
 #' @param plot.type Either "time" or "delta" (default: "time").
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "clean").
 #' @param output Either "plot" or "complete" (default: "plot").
@@ -20,7 +21,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_stability <- function(data, date, group = NULL, plot.type = "time", plot.theme = "clean", output = "plot", method = "bray", color = "Plant1"){
+amp_stability <- function(data, date, group = NULL, plot.type = "time", plot.theme = "clean", output = "plot", method = "bray", color = "Plant1", order = NULL){
   
   abund = t(as.data.frame(otu_table(data)@.Data))
   sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
@@ -58,6 +59,11 @@ amp_stability <- function(data, date, group = NULL, plot.type = "time", plot.the
     
     if (group == "newGroup"){ bt3 <- merge(bt3, oldGroup)}
     
+    if(!is.null(order)){
+      bt3[,"Plant1"] <- factor(bt3[,"Plant1"], levels = order)  
+    }
+    
+    
     p <- ggplot(bt3, aes_string(x = "DeltaDays", y = "Similarity", color = color, group = "Plant1")) +
       geom_point() +
       xlab("Time between samples (Days)") +
@@ -84,7 +90,11 @@ amp_stability <- function(data, date, group = NULL, plot.type = "time", plot.the
     
     if (group == "newGroup"){ bt3 <- merge(bt3, oldGroup) }
     
-    p <- ggplot(bt3, aes_string(x = "D2", y = "Similarity", color = color, group = "Plant1")) +
+    if(!is.null(order)){
+      bt3[,"Plant1"] <- factor(bt3[,"Plant1"], levels = order)  
+    }
+    
+      p <- ggplot(bt3, aes_string(x = "D2", y = "Similarity", color = color, group = "Plant1")) +
       geom_point() +
       geom_line() +
       ylim(0,1) +

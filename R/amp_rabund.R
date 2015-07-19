@@ -21,6 +21,7 @@
 #' @param point.size Size of points (default: 2).
 #' @param output Either plot or complete (default: "plot").
 #' @param sort.by Sort the boxplot by either Median, Mean or Total (default = "Median")
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A ggplot2 object
 #' 
@@ -34,7 +35,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal"){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -177,6 +178,20 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     } 
     
     outlist <- list(plot = p, data = TotalCounts)
+  }
+  
+  if(plot.theme == "clean"){
+    p <- p + theme(axis.ticks.length = unit(1, "mm"),
+                   axis.ticks = element_line(color = "black"),
+                   text = element_text(size = 10, color = "black"),
+                   axis.text = element_text(size = 8, color = "black"),
+                   plot.margin = unit(c(0,0,0,0), "mm"),
+                   panel.grid.major = element_line(color = "grey90"),
+                   panel.grid.minor = element_blank(),
+                   legend.key = element_blank(),
+                   panel.background = element_blank(),
+                   axis.line = element_line(color = "black")
+    )
   }
   
   if(output == "complete"){ return(outlist) }

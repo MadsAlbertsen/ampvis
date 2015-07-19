@@ -31,6 +31,10 @@ amp_test_species(data, design)
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
+\item{parallel}{To run DESeq2 in parallel mode (default: F)}
+
+\item{adjust.zero}{Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.}
+
 \item{tax.display}{Display additional taxonomic levels in the plot output e.g. "Genus".}
 }
 \value{

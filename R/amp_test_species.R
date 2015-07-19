@@ -17,6 +17,8 @@
 #' @param plot.show Display the X most significant results.
 #' @param plot.point.size The size of the plotted points.
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
+#' @param parallel To run DESeq2 in parallel mode (default: F)
+#' @param adjust.zero Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.
 #' 
 #' @return A p-value for each comparison.
 #' 
@@ -30,7 +32,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2, plot.theme = "normal"){
+amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL, test = "Wald", fitType = "parametric", sig = 0.01, fold = 0, tax.class = NULL, tax.empty = "best", label = F, plot.type = "point", plot.show = NULL, plot.point.size = 2, plot.theme = "normal", parallel = F , adjust.zero = NULL){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -80,7 +82,7 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   #data_deseq = phyloseq_to_deseq2(physeq=data, design=groupF)
   
   ## Test for significant differential abundance
-  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType, parallel = T)
+  data_deseq_test = DESeq(data_deseq, test=test, fitType=fitType, parallel = parallel)
   
   ## Extract the results
   res = results(data_deseq_test, cooksCutoff = FALSE)  
@@ -110,6 +112,11 @@ amp_test_species <- function(data, group, tax.aggregate = "OTU", tax.add = NULL,
   abund6 <- merge(abund5, res_tax, by = "Tax") %>%
     filter(padj < sig & fold < abs(log2FoldChange)) %>%
     arrange(padj)
+  
+  if(!is.null(adjust.zero)){
+    abund6$Abundance[abund6$Abundance==0] <- adjust.zero
+  }
+  
   
   colnames(sample)[1] <- "Sample"
   sample <- sample[c("Sample",group)]
