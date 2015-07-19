@@ -11,6 +11,10 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.13.1
+#### Bugfixes
+ - Fixed wrong link in the citation information.
+
 ### 1.13.0
 #### Enhancements
  - amp_export_table: New function to export an otutable from a phyloseq object.
