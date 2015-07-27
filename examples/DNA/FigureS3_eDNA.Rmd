@@ -95,7 +95,7 @@ ggsave("plots/S3D.eps", width = 60, height = 55, units = "mm")
 
 ## Figure S3E: Variance compared to time-series data
 ```{r edna_time}
-edna_time <- subset_samples(V13, (Exp.PMA == "YES" & E.coli == "0 %") | Exp.time == "YES") %>%
+edna_time <- subset_samples(V13, (Exp.PMA == "YES" & E.coli == "0%") | Exp.time == "YES") %>%
   rarefy_even_depth(sample.size=25000, rngseed=712) %>%
   filter_taxa(function(x) max(x) > 10, TRUE)
 ```
@@ -105,7 +105,8 @@ There seem to a quite large effect also compared to the varience over time.
 amp_ordinate(data = edna_time, 
              plot.color = "Date",             
              plot.point.size = 3,
-             plot.theme = "clean"
+             plot.theme = "clean",
+             plot.shape = "PMA"
              ) +
   scale_color_discrete(name = "Sampling date") +
   theme(legend.key.height = unit(3, "mm"))
