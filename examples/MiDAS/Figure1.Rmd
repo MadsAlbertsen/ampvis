@@ -1,0 +1,90 @@
+---
+title: "Figure 1 Top 50 median abundance"
+author: "Mads Albertsen"
+date: "Tuesday, January 27, 2015"
+output: html_document
+---
+
+## Load ampvis
+```{r load_packages, message=FALSE, warning=FALSE}
+library(ampvis)
+```
+
+## MiDAS data
+```{r load_MiDAS}
+data(MiDAS_1.20)
+```
+
+## Subset to top 20 plants 
+```{r subset_top20}
+top20 <- as.data.frame(as.matrix(sample_data(MiDAS_1.20))) %>%
+  group_by(Plant) %>%
+  summarise(Count = n()) %>% 
+  filter(Plant != "Fredericia") %>%
+  arrange(desc(Count)) %>%
+  filter(row_number() <= 20)
+
+d20 <- subset_samples(MiDAS_1.20, Plant %in% top20$Plant) %>%
+   transform_sample_counts(function(x) x / sum(x) * 100)
+```
+
+## Median abundance
+```{r boxplot, fig.align='center', fig.height=12, fig.width=9}
+p <- amp_rabund(data =d20, 
+           tax.aggregate = "Genus",
+           tax.add = "Phylum", 
+           tax.class = "p__Proteobacteria", 
+           sort.by = "Median",
+           tax.show = 50, 
+           scale.seq = 100) +
+     scale_y_log10(breaks = c(0.01,0.1, 1, 10)) +
+     xlab("") +  
+  theme(axis.ticks.length = unit(1, "mm"),
+          axis.ticks = element_line(color = "black"),
+          text = element_text(size = 14, color = "black"),
+          axis.text = element_text(color = "black"), 
+          plot.margin = unit(c(0,0,0,0), "mm"),
+          legend.key.width = unit(3, "mm"),
+          legend.key.height = unit(3, "mm"),
+          legend.key = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_line(color = "grey90"), 
+          panel.background = element_blank(),
+          axis.line = element_line(color = "black")
+          )
+
+p
+```
+
+## Save the plot
+```{r save, eval=FALSE}
+ggsave(plot = p, filename = "plots/top50.png", width = 9, height = 12, dpi = 600)
+```
+
+## Mediance abundance of top100 OTUs per. sample
+```{r rank_abundance_t100}
+t100 <- amp_heatmap(d20, group = c("Plant","Date"), tax.aggregate = "OTU", tax.show = 100, output = "complete", scale.seq = 100)
+
+t100_median <- group_by(t100$data, Group) %>%
+  summarise(Total = sum(Abundance)) %>%
+  summarise(Count = n(), 
+            Mean = mean(Total), 
+            Median = median(Total), 
+            sd = sd(Total))
+
+print(t100_median,  rownames = F)
+```
+
+## Mediance abundance of top50 Genera per. sample
+```{r rank_abundance_t50g}
+t50g <- amp_heatmap(d20, group = c("Plant","Date"), tax.aggregate = "Genus", tax.show = 50, output = "complete", scale.seq = 100)
+
+t50g_median <- group_by(t50g$data, Group) %>%
+  summarise(Total = sum(Abundance)) %>%
+  summarise(Count = n(), 
+            Mean = mean(Total), 
+            Median = median(Total), 
+            sd = sd(Total))
+
+print(t50g_median, rownames = F)
+```
