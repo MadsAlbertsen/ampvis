@@ -11,6 +11,10 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.13.2
+#### Bugfixes
+ - Fixed integer vs. numeric error when not transforming data.
+
 ### 1.13.1
 #### Bugfixes
  - Fixed wrong link in the citation information.
