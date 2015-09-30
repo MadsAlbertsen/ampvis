@@ -70,6 +70,8 @@ amp_ordinate(data)
 \item{plot.group.label.size}{Text size of the labels.}
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
+
+\item{plot.group.manual}{Manual definition of the plot.group, overrides plot.color.}
 }
 \value{
 A ggplot2 object

@@ -21,6 +21,7 @@
 #' @param plot.nspecies.tax Taxonomic level used in plot.nspecies (default: "Genus").
 #' @param plot.label Label points using a sample variable.
 #' @param plot.group Uses plot.color and groups samples by either "chull" or "centroid".
+#' @param plot.group.manual Manual definition of the plot.group, overrides plot.color.
 #' @param plot.group.label Add label based on the centroid of the specified group.
 #' @param plot.group.label.size Text size of the labels.
 #' @param trajectory Connects points based on a sample variable e.g. date.
@@ -49,7 +50,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, envfit.show = T, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal"){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, envfit.show = T, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal", plot.group.manual = NULL){
   
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -225,12 +226,16 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   }  
   
   ###Plot: Group the data either by centroid or chull
-  if (!is.null(plot.group) & !is.null(plot.color)){    
-    os <- data.frame(group = combined[,plot.color], x = combined[,plot.x], y = combined[,plot.y]) %>%
+  if (is.null(plot.group.manual)){
+    plot.group.manual <- plot.color
+    }
+  
+  if (!is.null(plot.group)& !is.null(plot.color)){    
+    os <- data.frame(group = combined[,plot.group.manual], x = combined[,plot.x], y = combined[,plot.y]) %>%
       group_by(group) %>%
       summarise(cx = mean(x), cy = mean(y)) %>%
       as.data.frame()
-    os2 <- merge(combined, os, by.x=plot.color, by.y = "group")
+    os2 <- merge(combined, os, by.x=plot.group.manual, by.y = "group")
     
     
     if (plot.group == "centroid"){
@@ -238,11 +243,11 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     }
     
     if (plot.group == "chull"){
-      splitData <- split(combined, combined[,plot.color]) %>%
+      splitData <- split(combined, combined[,plot.group.manual]) %>%
         lapply(function(df){df[chull(df[,plot.x], df[,plot.y]), ]})
       hulls <- do.call(rbind, splitData)
       
-      p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color), alpha = 0.2)
+      p <- p + geom_polygon(data=hulls, aes_string(fill = plot.color, group = plot.group.manual), alpha = 0.2)
     }
   }
   

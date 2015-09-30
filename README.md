@@ -11,6 +11,10 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.14.0
+#### Enhancements
+ - amp_ordinate: `plot.group.manual` can now be used to group samples independently on the `plot.color` option.
+
 ### 1.13.2
 #### Bugfixes
  - Fixed integer vs. numeric error when not transforming data.
