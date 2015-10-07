@@ -7,7 +7,7 @@
 #' @param data (required) A phyloseq object.
 #' @param group Group the data based on a sample variable.
 #' @param order.group A vector defining the order of groups.
-#' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
+#' @param tax.show The number of taxa to show or a vector of taxa names (default: 50).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
 #' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
