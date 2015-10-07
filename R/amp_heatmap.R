@@ -107,6 +107,13 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
         as.data.frame()
   }  
   
+  if (calc == "median"){
+    abund6 <- data.table(abund5)[, Abundance:=median(sum), by=list(Display, Group)] %>%
+              setkey(Display, Group) %>%
+              unique() %>% 
+              as.data.frame()
+  }
+  
   
   ## Find the X most abundant levels
   if (calc == "mean"){
@@ -121,6 +128,11 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
       arrange(desc(Abundance))
   }
   
+  if (calc == "median"){
+    TotalCounts <- group_by(abund6, Display) %>%
+      summarise(Abundance = median(Abundance)) %>%
+      arrange(desc(Abundance))
+  }
   
   ## Subset to X most abundant levels
   if (is.numeric(tax.show)){
