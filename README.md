@@ -11,6 +11,12 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.15.0
+#### Enhancements
+ - amp_heatmap: `order.y` now supports the input "cluster". Which will do basic hclust on the presented data and arrange it according to the clustering.
+ - amp_heatmap: The new options `min.abundance` and `max.abundance` can be used to limit the values displayed in the plot. This also impacts the new clustering option in `order.y`.
+ - amp_heatmap: `scale.seq` is now 100 by default. Hence, assuming that the data have been converted to a percentage.
+
 ### 1.14.0
 #### Enhancements
  - amp_ordinate: `plot.group.manual` can now be used to group samples independently on the `plot.color` option.

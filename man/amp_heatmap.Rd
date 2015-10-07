@@ -27,7 +27,7 @@ amp_headtmap(data)
 
 \item{order.x}{A taxonomy group or vector to order the x-axis by.}
 
-\item{order.y}{A sample or vector to order the y-axis by.}
+\item{order.y}{A sample or vector to order the y-axis by, alternatively "cluster".}
 
 \item{plot.numbers}{Plot the values on the heatmap (default: T)}
 
@@ -37,7 +37,7 @@ amp_headtmap(data)
 
 \item{plot.na}{Whether to color missing values with the lowest color in the scale (default: F).}
 
-\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
+\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 100)}
 
 \item{output}{To output a plot or the complete data inclusive dataframes (default: plot)}
 
@@ -46,6 +46,10 @@ amp_headtmap(data)
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
 \item{calc}{Calculate and display mean or max across the groups (default: "mean").}
+
+\item{min.abundance}{All values below are given the same color.}
+
+\item{max.abundance}{All values above are given the same color.}
 }
 \value{
 A ggplot2 object or a list with the ggplot2 object and associated dataframes.

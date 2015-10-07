@@ -15,14 +15,16 @@
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param calc Calculate and display mean or max across the groups (default: "mean").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
-#' @param order.y A sample or vector to order the y-axis by.
+#' @param order.y A sample or vector to order the y-axis by, alternatively "cluster".
 #' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
 #' @param plot.colorscale Either sqrt or log10 (default: "sqrt")
 #' @param plot.na Whether to color missing values with the lowest color in the scale (default: F).
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
+#' @param min.abundance All values below are given the same color.
+#' @param max.abundance All values above are given the same color.
 #' @param output To output a plot or the complete data inclusive dataframes (default: plot)
 #' 
 #' @return A ggplot2 object or a list with the ggplot2 object and associated dataframes.
@@ -37,7 +39,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 10000, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean"){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = NULL, max.abundance = NULL){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -73,9 +75,9 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     melt(id.var = "Display", value.name= "Abundance", variable.name = "Sample")
   
   abund3 <- data.table(abund3)[, sum:=sum(Abundance), by=list(Display, Sample)] %>%
-            setkey(Display, Sample) %>%
-            unique() %>% 
-            as.data.frame()
+    setkey(Display, Sample) %>%
+    unique() %>% 
+    as.data.frame()
   
   ## Add group information
   suppressWarnings(
@@ -95,16 +97,16 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   if (calc == "mean"){
     abund6 <- data.table(abund5)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
-              setkey(Display, Group) %>%
-              unique() %>% 
-              as.data.frame()
+      setkey(Display, Group) %>%
+      unique() %>% 
+      as.data.frame()
   }
   
   if (calc == "max"){
-      abund6 <- data.table(abund5)[, Abundance:=max(sum), by=list(Display, Group)] %>%
-        setkey(Display, Group) %>%
-        unique() %>% 
-        as.data.frame()
+    abund6 <- data.table(abund5)[, Abundance:=max(sum), by=list(Display, Group)] %>%
+      setkey(Display, Group) %>%
+      unique() %>% 
+      as.data.frame()
   }  
   
   if (calc == "median"){
@@ -117,9 +119,9 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   ## Find the X most abundant levels
   if (calc == "mean"){
-      TotalCounts <- group_by(abund6, Display) %>%
-        summarise(Abundance = sum(Abundance)) %>%
-        arrange(desc(Abundance))
+    TotalCounts <- group_by(abund6, Display) %>%
+      summarise(Abundance = sum(Abundance)) %>%
+      arrange(desc(Abundance))
   }
   
   if (calc == "max"){
@@ -177,7 +179,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     abund7$Display <- factor(abund7$Display, levels = rev(TotalCounts$Display))
   }
   if (!is.null(order.y)){
-    if (length(order.y) == 1){      
+    if (length(order.y) == 1 & order.y != "cluster"){      
       temp1 <- filter(abund7, Group == order.y) %>%
         group_by(Display) %>%
         summarise(Mean = mean(Abundance)) %>%
@@ -187,6 +189,19 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     }
     if (length(order.y) > 1){
       abund7$Display <- factor(abund7$Display, levels = order.y)
+    }
+    if (order.y == "cluster"){
+      if (is.null(min.abundance)){min.abundance <- min(abund7$Abundance)}
+      if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
+      tdata <- mutate(abund7, 
+                      Abundance = ifelse(Abundance < min.abundance, min.abundance, Abundance),
+                      Abundance = ifelse(Abundance > max.abundance, max.abundance, Abundance))
+      tdata <- dcast(tdata, Display~Group)
+      rownames(tdata) <- tdata$Display
+      tdata2 <- tdata[,-1]
+      tclust <- hclust(dist(tdata2))
+      tnames <- levels(droplevels(tdata$Display))[tclust$order]
+      abund7$Display <- factor(abund7$Display, levels = tnames)
     }
   }
   
@@ -198,7 +213,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
         summarise(Mean = mean(Abundance)) %>%
         arrange(desc(Mean))
       abund7$Group <- factor(abund7$Group, levels = as.character(temp1$Group))
-        
+      
     }    
     if (length(order.x) > 1){
       abund7$Group <- factor(abund7$Group, levels = order.x)
@@ -216,6 +231,9 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   if (length(group) > 1 ){ abund7 <- merge(abund7, oldGroup)}
   
+  if (is.null(min.abundance)){min.abundance <- min(abund7$Abundance)}
+  if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
+  
   ## Make a heatmap style plot
   p <- ggplot(abund7, aes_string(x = "Group", y = "Display", label = formatC("Abundance", format = "f", digits = 1))) +     
     geom_tile(aes(fill = Abundance), colour = "white", size = 0.5) +
@@ -229,11 +247,13 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     p <- p + geom_text(data = abund8, size = plot.text.size, colour = "grey10")  
   }
   if (is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, na.value=plot.na)
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, na.value=plot.na, oob = squish, limits = c(min.abundance, max.abundance))
   }
   if (!is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na)
+    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na , oob = squish, limits = c(min.abundance, max.abundance))
   }
+  
+  
   if (is.null(normalise)){
     p <- p + labs(x = "", y = "", fill = "% Read\nAbundance")  
   }
