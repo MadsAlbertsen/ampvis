@@ -13,7 +13,7 @@ amp_rabund(data)
 
 \item{order.group}{A vector defining the order of groups.}
 
-\item{tax.show}{The number of taxa to show or a vector of taxa names (default: 10).}
+\item{tax.show}{The number of taxa to show or a vector of taxa names (default: 50).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
 

@@ -11,6 +11,13 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.16.0
+#### Bugfixes
+ - amp_rabund: `tax.show` now correctly shows that 50 are displayed by default (@Kirk3gaard).
+
+#### Enhancements
+ - amp_heatmap: Added the ability to calculate and display median values in the `calc` parameter (@Kirk3gaard).
+
 ### 1.15.0
 #### Enhancements
  - amp_heatmap: `order.y` now supports the input "cluster". Which will do basic hclust on the presented data and arrange it according to the clustering.

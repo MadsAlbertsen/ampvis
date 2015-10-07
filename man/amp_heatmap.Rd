@@ -45,7 +45,7 @@ amp_headtmap(data)
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
-\item{calc}{Calculate and display mean or max across the groups (default: "mean").}
+\item{calc}{Calculate and display mean, max or median across the groups (default: "mean").}
 
 \item{min.abundance}{All values below are given the same color.}
 

@@ -13,7 +13,7 @@
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
-#' @param calc Calculate and display mean or max across the groups (default: "mean").
+#' @param calc Calculate and display mean, max or median across the groups (default: "mean").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by, alternatively "cluster".
 #' @param plot.numbers Plot the values on the heatmap (default: T)
