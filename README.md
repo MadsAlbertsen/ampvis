@@ -11,10 +11,14 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.16.1
+#### Bugfixes
+ - Added the `scales` library as a dependency.
+ - amp_heatmap: Various bugfixes in the clustering option. It should now work with all other settings.
+
 ### 1.16.0
 #### Bugfixes
  - amp_rabund: `tax.show` now correctly shows that 50 are displayed by default (@Kirk3gaard).
-
 #### Enhancements
  - amp_heatmap: Added the ability to calculate and display median values in the `calc` parameter (@Kirk3gaard).
 

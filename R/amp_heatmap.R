@@ -196,7 +196,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
       tdata <- mutate(abund7, 
                       Abundance = ifelse(Abundance < min.abundance, min.abundance, Abundance),
                       Abundance = ifelse(Abundance > max.abundance, max.abundance, Abundance))
-      tdata <- dcast(tdata, Display~Group)
+      tdata <- dcast(tdata, Display~Group, value.var = "Abundance")
       rownames(tdata) <- tdata$Display
       tdata2 <- tdata[,-1]
       tclust <- hclust(dist(tdata2))
@@ -264,7 +264,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   if(plot.theme == "clean"){
     p <- p + theme(legend.position = "none",
                    axis.text.y = element_text(size = 8, color = "black"),
-                   axis.text.x = element_text(size = 8, color = "black"),
+                   axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
                    axis.title = element_blank(),
                    text = element_text(size = 8, color = "black"),
                    axis.ticks.length = unit(1, "mm"),
