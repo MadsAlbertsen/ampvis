@@ -11,6 +11,11 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.17.0
+#### Enhancements
+ - New function: `amp_stats` can be used to generate a table with metadata, number of sequences and alpha-diversity indices.
+ - New function: `amp_rarecurve` can be used to generate rarefaction curves.
+
 ### 1.16.1
 #### Bugfixes
  - Added the `scales` library as a dependency.
