@@ -47,7 +47,7 @@ amp_headtmap(data)
 
 \item{calc}{Calculate and display mean, max or median across the groups (default: "mean").}
 
-\item{min.abundance}{All values below are given the same color.}
+\item{min.abundance}{All values below are given the same color (default: 0.1).}
 
 \item{max.abundance}{All values above are given the same color.}
 }

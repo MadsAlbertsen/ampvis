@@ -13,7 +13,7 @@
 #' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
 #' @param tax.empty Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
 #' @param plot.type Either point, boxplot or curve (default: boxplot).
 #' @param plot.flip Flip the axis of the plot (default: F).
 #' @param plot.log Log10 scale the data (default: F)
@@ -35,7 +35,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 10000, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 100, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal"){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),

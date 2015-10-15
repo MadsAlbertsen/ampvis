@@ -15,7 +15,7 @@ amp_rabund(data)
 
 \item{tax.show}{The number of taxa to show or a vector of taxa names (default: 50).}
 
-\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
+\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 100)}
 
 \item{tax.clean}{Replace the phylum Proteobacteria with the respective Classes instead (default: T).}
 

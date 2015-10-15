@@ -23,7 +23,7 @@
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
-#' @param min.abundance All values below are given the same color.
+#' @param min.abundance All values below are given the same color (default: 0.1).
 #' @param max.abundance All values above are given the same color.
 #' @param output To output a plot or the complete data inclusive dataframes (default: plot)
 #' 
@@ -39,7 +39,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = NULL, max.abundance = NULL){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "sqrt", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -191,7 +191,6 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
       abund7$Display <- factor(abund7$Display, levels = order.y)
     }
     if (order.y == "cluster"){
-      if (is.null(min.abundance)){min.abundance <- min(abund7$Abundance)}
       if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
       tdata <- mutate(abund7, 
                       Abundance = ifelse(Abundance < min.abundance, min.abundance, Abundance),
@@ -231,8 +230,12 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   if (length(group) > 1 ){ abund7 <- merge(abund7, oldGroup)}
   
-  if (is.null(min.abundance)){min.abundance <- min(abund7$Abundance)}
-  if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
+  if (is.null(min.abundance)){
+    min.abundance <- ifelse(min(abund7$Abundance) > 0.001, min(abund7$Abundance), 0.001)
+    }
+  if (is.null(max.abundance)){
+    max.abundance <- max(abund7$Abundance)
+    }
   
   ## Make a heatmap style plot
   p <- ggplot(abund7, aes_string(x = "Group", y = "Display", label = formatC("Abundance", format = "f", digits = 1))) +     

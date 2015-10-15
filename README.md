@@ -11,6 +11,12 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.17.1
+#### Bugfixes
+ - amp_heatmap: Fixed an error related to the new `min.abundance` option. The default value is now 0.1 which fixes the problems with log10 and 0 values.
+ - amp_rabund: `scale.seq` is now 100 by default. Like all other functions.
+
+
 ### 1.17.0
 #### Enhancements
  - New function: `amp_stats` can be used to generate a table with metadata, number of sequences and alpha-diversity indices.
