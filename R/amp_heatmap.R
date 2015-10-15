@@ -1,31 +1,31 @@
 #' Generate a heatmap from amplicon data
 #'
-#' Generate a heatmap in ggplot2 format from amplicon data in phyloseq format. Use sample metadata to aggregate sampes and taxonomy to aggregate OTUs.
+#' Generate a heatmap in ggplot2 format from amplicon data in "phyloseq" format. Use sample metadata to aggregate samples and taxonomy to aggregate OTUs.
 #'
-#' @usage amp_headtmap(data)
+#' @usage amp_heatmap(data)
 #'
 #' @param data (required) A phyloseq object including sample data (or a list).
 #' @param group A variable from the associated sample data to group samples by.
 #' @param scale A variable from the associated sample data to scale the abundance by.
 #' @param normalise A specific sample or group to normalise the counts to, or "relative".
-#' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: Phylum)
-#' @param tax.add Additional taxonomic levels to display for each entry e.g. "Phylum" (default: none) 
+#' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: "Phylum")
+#' @param tax.add Additional taxonomic levels to display for each entry e.g. "Phylum" (default: "none") 
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 10).
-#' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
+#' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
-#' @param calc Calculate and display mean, max or median across the groups (default: "mean").
+#' @param calc Calculate and display "mean2, "max" or "median" across the groups (default: "mean").
 #' @param order.x A taxonomy group or vector to order the x-axis by.
 #' @param order.y A sample or vector to order the y-axis by, alternatively "cluster".
 #' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
-#' @param plot.colorscale Either sqrt or log10 (default: "sqrt")
+#' @param plot.colorscale Either "sqrt" or "log10" (default: "sqrt")
 #' @param plot.na Whether to color missing values with the lowest color in the scale (default: F).
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
 #' @param min.abundance All values below are given the same color.
 #' @param max.abundance All values above are given the same color.
-#' @param output To output a plot or the complete data inclusive dataframes (default: plot)
+#' @param output To output a plot or the complete data inclusive dataframes (default: "plot")
 #' 
 #' @return A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 #' 
@@ -48,12 +48,12 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   ## Clean up the taxonomy
   data <- amp_rename(data = data, tax.class = tax.class, tax.empty = tax.empty, tax.level = tax.aggregate)
   
-  ## Extract the data into seperate objects for readability
+  ## Extract the data into separate objects for readability
   abund <- data[["abund"]]  
   tax <- data[["tax"]]
   sample <- data[["sample"]]
   
-  ## Scale the data by a selected metadata variable
+  ## Scale the data by a selected metadata sample variable
   if (!is.null(scale)){
     variable <- as.numeric(sample[,scale])
     abund <- t(t(abund)*variable)
@@ -93,7 +93,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     } else{ abund5 <- data.frame(abund3, Group = abund3$Sample)}
   )
   
-  ## Take the average to group level
+  ## Calculate statistic ("mean", "median", or "max") to group level
   
   if (calc == "mean"){
     abund6 <- data.table(abund5)[, Abundance:=mean(sum), by=list(Display, Group)] %>%
@@ -117,7 +117,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   
   
-  ## Find the X most abundant levels
+  ## Find the x most abundant levels
   if (calc == "mean"){
     TotalCounts <- group_by(abund6, Display) %>%
       summarise(Abundance = sum(Abundance)) %>%
@@ -136,7 +136,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
       arrange(desc(Abundance))
   }
   
-  ## Subset to X most abundant levels
+  ## Subset to x most abundant levels
   if (is.numeric(tax.show)){
     if (tax.show > nrow(TotalCounts)){  
       tax.show <- nrow(TotalCounts)
