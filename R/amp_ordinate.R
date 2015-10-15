@@ -7,15 +7,15 @@
 #' @param data (required) A phyloseq object including sample data.
 #' @param scale A variable from the associated sample data to scale the abundance by.
 #' @param trans Transform the raw counts, currently supports "none" or "sqrt" (default: "sqrt").
-#' @param ordinate.type Either PCA or NMDS (default: "PCA").
+#' @param ordinate.type Either "PCA" or "NMDS" (default: "PCA").
 #' @param constrain Constrain the PCA by a sample variable.
 #' @param ncomp The number of principal components to extract if using PCA (default: 5)
 #' @param plot.x Variable to plot on the x-axis if using PCA (default: "PC1")
 #' @param plot.y Variable to plot on the y-axis if using PCA (default: "PC2")
-#' @param plot.color Color the points by a sample variable.
+#' @param plot.color Color the points by a sample variable e.g. "treatment".
 #' @param plot.color.order Order the groups used for coloring by a vector.
 #' @param plot.point.size Size of the plotted sample points (default: 3)
-#' @param plot.shape Shape points by a sample variable.
+#' @param plot.shape Shape points by a sample variable e.g. "treatment".
 #' @param plot.species Plot loadings as points (default: F)
 #' @param plot.nspecies Plot the n most extreme species with their taxonomic classification (default: 0).
 #' @param plot.nspecies.tax Taxonomic level used in plot.nspecies (default: "Genus").
@@ -24,8 +24,8 @@
 #' @param plot.group.manual Manual definition of the plot.group, overrides plot.color.
 #' @param plot.group.label Add label based on the centroid of the specified group.
 #' @param plot.group.label.size Text size of the labels.
-#' @param trajectory Connects points based on a sample variable e.g. date.
-#' @param trajectory.group Split the trajectory by a group.
+#' @param trajectory Connects points based on a sample variable e.g. "date".
+#' @param trajectory.group Split the trajectory by a sample variable group e.g. "treatment".
 #' @param envfit.factor A vector of factor variables from the sample data used for envfit to the model.
 #' @param envfit.numeric A vector of numerical variables from the sample data used for envfit to the model.
 #' @param envfit.significant The significance treshold for displaying envfit parameters (default: 0.01).
@@ -33,10 +33,10 @@
 #' @param envfit.textsize Size of the envfit text on the plot (default: 3).
 #' @param envfit.color Color of the envfit text on the plot (default: "darkred").
 #' @param envfit.show Show the results on the plot (default: T).
-#' @param tax.empty Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).
+#' @param tax.empty Option to add "best" classification or just the "OTU" name to each "OTU" (default: "best").
 #' @param scale.species Rescale the plotted loadings to maximise visability (default: F).
-#' @param output Either plot or complete (default: "plot").
-#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
+#' @param output Either "plot" or "complete" (default: "plot").
+#' @param plot.theme Choose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A ggplot2 object
 #' 
@@ -63,7 +63,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   data <- amp_rename(data = data, tax.empty = tax.empty)
   
   
-  ## Extract the data into seperate objects for readability
+  ## Extract the data into separate objects for readability
   abund <- data[["abund"]]  
   tax <- data[["tax"]]
   sample <- data[["sample"]]
@@ -165,7 +165,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     outlist <- append(outlist, list(pca.model = model, pca.scores = combined, loadings = species))
   }
   
-  ## Fit environmental factors using vegans envfit function
+  ## Fit environmental factors using "envfit" function from vegan
   
   if(!is.null(envfit.factor)){   
     fit  <- suppressWarnings(as.data.frame(as.matrix(sample[, envfit.factor])))
@@ -181,7 +181,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
     outlist <- append(outlist, list(eff.model = ef.f))
   }
   
-  ## Fit environmental numeric data using vegans envfit function
+  ## Fit environmental numeric data using "envfit" function from vegan
   
   if (!is.null(envfit.numeric)){
     fit <- suppressWarnings(as.data.frame(as.matrix(sample[, envfit.numeric])))
