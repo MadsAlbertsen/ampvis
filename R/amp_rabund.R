@@ -35,7 +35,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 100, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 100, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal", ...){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -92,6 +92,26 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     if(sort.by == "Total"){TotalCounts %<>% arrange(desc(Total)) %>% as.data.frame()}
     
     abund5$Display <- factor(abund5$Display, levels = rev(TotalCounts$Display))
+    
+    # Make grouping of boxplot based on dominating Group for each Display item
+     if (group != "Sample" & grouping==T & !is.null(order.group)){
+
+      # Initiate sorting specific variables and dataframes
+      z<-length(levels(abund5$Display)) # Number of different Display items
+      max_lev<-data.frame(Display=levels(abund5$Display),max_abundance=rep(0,length(levels(abund5$Display))),dom_Group=rep("notset",z),lastsorter=rep(0,z)) # Dataframe to store maximum abundance and corresponding dominating Group
+      max_lev$dom_Group<-as.character(max_lev$dom_Group) # Change the dom_Group class from factor to character
+      
+      for (i in 1:z) { # For each level of Display do:
+        current_disp<-max_lev$Display[i] # Get the current Display item
+        max_val<-max(abund5$Abundance[which(abund5$Display==current_disp)]) # Find the maximum value
+        dominant_group<-abund5$Group[(which(abund5$Abundance==max_val))]    # Find the dominating Group
+        grouporder<-which(order.group==dominant_group)
+        max_lev[i,2:4]<-c(max_val,as.character(dominant_group),grouporder)             # Store the maximum value and corresponding Group
+      }
+      new_sort<-max_lev[with(max_lev, order(lastsorter,max_abundance)), ]    # Sort the Display items by dominating group and then abundance within the group
+      abund5$Display<-factor(abund5$Display,levels=new_sort$Display)        # Change the order of the levels of Display items in the abundance dataframe for plotting
+    
+     }
     
     ## Make sure we only show a possible number of taxa
     if (!is.numeric(tax.show)){
