@@ -9,18 +9,18 @@
 #' @param order.group A vector defining the order of groups.
 #' @param tax.show The number of taxa to show or a vector of taxa names (default: 50).
 #' @param tax.clean Replace the phylum Proteobacteria with the respective Classes instead (default: T).
-#' @param tax.aggregate The taxonomic level that the data should be aggregated to (defualt: OTU)
-#' @param tax.add Additional taxonomic levels to display for each entry (default: Phylum) 
+#' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: "Genus")
+#' @param tax.add Additional taxonomic levels to display for each entry (default: "Phylum") 
 #' @param tax.empty Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
-#' @param plot.type Either point, boxplot or curve (default: boxplot).
+#' @param plot.type Either "point", "boxplot" or "curve" (default: "boxplot").
 #' @param plot.flip Flip the axis of the plot (default: F).
 #' @param plot.log Log10 scale the data (default: F)
 #' @param adjust.zero Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.
 #' @param point.size Size of points (default: 2).
-#' @param output Either plot or complete (default: "plot").
-#' @param sort.by Sort the boxplot by either Median, Mean or Total (default = "Median")
+#' @param output Either "plot" or "complete" (default: "plot").
+#' @param sort.by Sort the boxplot by either "Median", "Mean" or "Total" (default = "Median")
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' 
 #' @return A ggplot2 object
