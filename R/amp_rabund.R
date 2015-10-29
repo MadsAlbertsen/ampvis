@@ -22,6 +22,7 @@
 #' @param output Either plot or complete (default: "plot").
 #' @param sort.by Sort the boxplot by either Median, Mean or Total (default = "Median")
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
+#' @param order.y A vector to order the y-axis by
 #' 
 #' @return A ggplot2 object
 #' 
@@ -35,7 +36,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 100, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal"){
+amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50, scale.seq = 100, tax.clean = T, plot.type = "boxplot", plot.log = F, output = "plot", tax.add = NULL, tax.aggregate = "Genus", tax.empty = "best", tax.class = NULL, point.size = 2, plot.flip = F, sort.by = "Median", adjust.zero = NULL, plot.theme = "normal",...){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -124,6 +125,11 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     ## Add a small constant to handle ggplot2 removal of 0 values in log scaled plots
     if(!is.null(adjust.zero)){
       abund7$Abundance[abund7$Abundance==0] <- adjust.zero
+    }
+    
+    ## Order y based on a vector
+    if (length(order.y) > 1){
+      abund7$Display <- factor(abund7$Display, levels = order.y)
     }
     
     ## plot the data
