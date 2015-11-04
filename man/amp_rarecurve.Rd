@@ -16,6 +16,8 @@ amp_rarecurve(data)
 \item{xlim}{vector of x-axis limits.}
 
 \item{label}{Label rarefaction curves (default: F).}
+
+\item{color}{Color lines by metadata.}
 }
 \description{
 Calculate rarefaction curve for each sample using the vegan rarecurve function directly from a phyloseq object.

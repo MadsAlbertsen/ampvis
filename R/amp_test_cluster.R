@@ -99,5 +99,5 @@ amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, pl
     )
   }
   
-  return(list(betad = betad, adonis = res_adonis, hc = hc, plot_cluster = p1))  
+  return(list(betad = betad, adonis = res_adonis, hc = hc, plot_cluster = p1, temp  = hc_d))  
 }

@@ -13,7 +13,7 @@ amp_ordinate(data)
 
 \item{trans}{Transform the raw counts, currently supports "none" or "sqrt" (default: "sqrt").}
 
-\item{ordinate.type}{Either PCA or NMDS (default: "PCA").}
+\item{ordinate.type}{Either "PCA" or "NMDS" (default: "PCA").}
 
 \item{ncomp}{The number of principal components to extract if using PCA (default: 5)}
 
@@ -21,13 +21,13 @@ amp_ordinate(data)
 
 \item{plot.y}{Variable to plot on the y-axis if using PCA (default: "PC2")}
 
-\item{plot.color}{Color the points by a sample variable.}
+\item{plot.color}{Color the points by a sample variable, e.g "treatment".}
 
 \item{plot.color.order}{Order the groups used for coloring by a vector.}
 
 \item{plot.point.size}{Size of the plotted sample points (default: 3)}
 
-\item{plot.shape}{Shape points by a sample variable.}
+\item{plot.shape}{Shape points by a sample variable, e.g "treatment".}
 
 \item{plot.species}{Plot loadings as points (default: F)}
 
@@ -57,19 +57,19 @@ amp_ordinate(data)
 
 \item{tax.empty}{Option to add "best" classification or just the "OTU" name to each "OTU" (default: best).}
 
-\item{output}{Either plot or complete (default: "plot").}
+\item{output}{Either "plot" or "complete" (default: "plot").}
 
 \item{constrain}{Constrain the PCA by a sample variable.}
 
 \item{scale.species}{Rescale the plotted loadings to maximise visability (default: F).}
 
-\item{trajectory}{Connects points based on a sample variable e.g. date.}
+\item{trajectory}{Connects points based on a sample variable e.g. "date".}
 
-\item{trajectory.group}{Split the trajectory by a group.}
+\item{trajectory.group}{Split the trajectory by a sample variable, e.g "treatment".}
 
 \item{plot.group.label.size}{Text size of the labels.}
 
-\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
+\item{plot.theme}{Choose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
 \item{plot.group.manual}{Manual definition of the plot.group, overrides plot.color.}
 }

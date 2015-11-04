@@ -11,7 +11,7 @@ amp_core(data)
 
 \item{group}{Group the data based on a sample variable (default: "Sample").}
 
-\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 10000)}
+\item{scale.seq}{The number of sequences in the pre-filtered samples (default: 100)}
 
 \item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
 

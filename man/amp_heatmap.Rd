@@ -4,7 +4,7 @@
 \alias{amp_heatmap}
 \title{Generate a heatmap from amplicon data}
 \usage{
-amp_headtmap(data)
+amp_heatmap(data)
 }
 \arguments{
 \item{data}{(required) A phyloseq object including sample data (or a list).}
@@ -15,15 +15,15 @@ amp_headtmap(data)
 
 \item{scale}{A variable from the associated sample data to scale the abundance by.}
 
-\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: Phylum)}
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: "Phylum")}
 
-\item{tax.add}{Additional taxonomic levels to display for each entry e.g. "Phylum" (default: none)}
+\item{tax.add}{Additional taxonomic levels to display for each entry e.g. "Phylum" (default: "none")}
 
 \item{tax.show}{The number of taxa to show or a vector of taxa names (default: 10).}
 
 \item{tax.class}{Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").}
 
-\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).}
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").}
 
 \item{order.x}{A taxonomy group or vector to order the x-axis by.}
 
@@ -33,29 +33,31 @@ amp_headtmap(data)
 
 \item{plot.breaks}{A vector of breaks for the abundance legend.}
 
-\item{plot.colorscale}{Either sqrt or log10 (default: "sqrt")}
+\item{plot.colorscale}{Either "sqrt" or "log10" (default: "log10")}
 
 \item{plot.na}{Whether to color missing values with the lowest color in the scale (default: F).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 100)}
 
-\item{output}{To output a plot or the complete data inclusive dataframes (default: plot)}
+\item{output}{To output a plot or the complete data inclusive dataframes (default: "plot")}
 
 \item{plot.text.size}{The size of the plotted text (default: 4).}
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
-\item{calc}{Calculate and display mean, max or median across the groups (default: "mean").}
+\item{calc}{Calculate and display "mean", "max" or "median" across the groups (default: "mean").}
 
 \item{min.abundance}{All values below are given the same color (default: 0.1).}
 
 \item{max.abundance}{All values above are given the same color.}
+
+\item{sort.by}{Sort the heatmap by a specific value of the "group", e.g. "Treatment A".}
 }
 \value{
 A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 }
 \description{
-Generate a heatmap in ggplot2 format from amplicon data in phyloseq format. Use sample metadata to aggregate sampes and taxonomy to aggregate OTUs.
+Generate a heatmap in ggplot2 format from amplicon data in phyloseq format. Use sample metadata to aggregate samples and taxonomy to aggregate OTUs.
 }
 \author{
 Mads Albertsen \email{MadsAlbertsen85@gmail.com}

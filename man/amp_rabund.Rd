@@ -19,15 +19,15 @@ amp_rabund(data)
 
 \item{tax.clean}{Replace the phylum Proteobacteria with the respective Classes instead (default: T).}
 
-\item{plot.type}{Either point, boxplot or curve (default: boxplot).}
+\item{plot.type}{Either "point", "boxplot" or "curve" (default: "boxplot").}
 
 \item{plot.log}{Log10 scale the data (default: F)}
 
-\item{output}{Either plot or complete (default: "plot").}
+\item{output}{Either "plot" or "complete" (default: "plot").}
 
-\item{tax.add}{Additional taxonomic levels to display for each entry (default: Phylum)}
+\item{tax.add}{Additional taxonomic levels to display for each entry (default: "Phylum")}
 
-\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (defualt: OTU)}
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (defualt: "Genus")}
 
 \item{tax.empty}{Either "remove" OTUs without taxonomic information, "rename" with best classification or add the "OTU" name (default: rename).}
 
@@ -37,11 +37,13 @@ amp_rabund(data)
 
 \item{plot.flip}{Flip the axis of the plot (default: F).}
 
-\item{sort.by}{Sort the boxplot by either Median, Mean or Total (default = "Median")}
+\item{sort.by}{Sort the boxplot by either "median", "mean" or "total" (default = "median")}
 
 \item{adjust.zero}{Keep 0 abundances in ggplot2 median calculations by adding a small constant to these.}
 
 \item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
+
+\item{order.y}{A vector to order the y-axis by.}
 }
 \value{
 A ggplot2 object

@@ -9,7 +9,7 @@
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: best).
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param tax.aggregate The taxonomic level that the data should be aggregated to (default: OTU).
-#' @param scale.seq The number of sequences in the pre-filtered samples (default: 10000)
+#' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
 #' @param plot.type Either core or frequency (default: frequency).
 #' @param weight Weight the frequency by abundance (default: T).
 #' @param abund.treshold Treshold for considering something abundant in percent (default: 0.1).
@@ -27,7 +27,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_core <- function(data, group = "Sample", scale.seq = 10000, tax.class = NULL, tax.empty = "best", plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", weight = T, abund.treshold = 0.1){
+amp_core <- function(data, group = "Sample", scale.seq = 100, tax.class = NULL, tax.empty = "best", plot.type = "frequency", output = "plot",  tax.aggregate = "OTU", weight = T, abund.treshold = 0.1){
   
   ## Check the input data type and convert to list if it's a phyloseq object
   data <- list(abund = as.data.frame(otu_table(data)@.Data),

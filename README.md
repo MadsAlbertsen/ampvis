@@ -11,6 +11,12 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 
 ## Changelog
 
+### 1.18.0
+#### Enhancements
+ - amp_rarecurve: Now supports coloring by groups (@Kirk3gaard).
+ - amp_rabund: Now supports manual sorting of the y-axis by `order.y` (@Kirk3gaard).
+ - amp_heatmap: The new option `sort.by` enables to show the x most abundant taxa from a specific group. Default option is to show the x most abundant taxa on average.
+
 ### 1.17.1
 #### Bugfixes
  - amp_heatmap: Fixed an error related to the new `min.abundance` option. The default value is now 0.1 which fixes the problems with log10 and 0 values.
