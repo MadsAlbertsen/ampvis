@@ -226,7 +226,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   
   ## Handle NA values
-  if(plot.na == F){ plot.na <- "grey50" }else{ if(!is.null(color.vector) {plot.na <-color.vector[1]} else {plot.na <-"#EF8A62"}}  
+  if(plot.na == F){ plot.na <- "grey50" }else{ if(!is.null(color.vector)) {plot.na <-color.vector[1]} else {plot.na <-"#EF8A62"}}  
   
   ## Scale to percentages if not normalised and scaled
   
