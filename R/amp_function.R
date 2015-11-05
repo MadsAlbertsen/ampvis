@@ -42,8 +42,10 @@ amp_function <- function(heatmap, functions = NULL, adjust = 10, genus.pos = 1, 
   
   # Make selection if not plotting all functions
   if (!is.null(selection)){
-    functions<-functions[,c("Genus",selection)]
-  }  
+    functions <- functions[,c("Genus",selection)]
+  } else{
+    functions <- functions[,c("Genus",c("FIL", "AOB", "NOB", "PAO", "GAO", "HET", "FER"))]
+  }
   
   # Merge the genus and function information
   

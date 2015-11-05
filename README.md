@@ -10,6 +10,11 @@ To cite ampvis please use:
 Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
 
 ## Changelog
+### 1.20.0
+#### Enhancements
+ - amp_function: Updated MiDAS functional data to the current version. It's now possible to use all the functional data in MiDAS.
+ - amp_cleanMiF: Small function for internal use to format raw MiDAS functional data to ampvis format.
+
 ### 1.19.0
 #### Enhancements
  - amp_rarecurve: Now supports a basic legend (@Kirk3gaard).
