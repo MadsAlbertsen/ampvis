@@ -27,6 +27,7 @@
 #' @param min.abundance All values below are given the same color (default: 0.1).
 #' @param max.abundance All values above are given the same color.
 #' @param output To output a plot or the complete data inclusive dataframes (default: "plot")
+#' @param color.vector Vector with colors for colorscale e.g. c("red","white") (default: NULL)
 #' 
 #' @return A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 #' 
@@ -40,7 +41,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL, color.vector = NULL){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -225,7 +226,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   }
   
   ## Handle NA values
-  if(plot.na == F){ plot.na <- "grey50" }else{ plot.na <-"#EF8A62" }  
+  if(plot.na == F){ plot.na <- "grey50" }else{ if(!is.null(color.vector)) {plot.na <-color.vector[1]} else {plot.na <-"#EF8A62"}}  
   
   ## Scale to percentages if not normalised and scaled
   
@@ -249,16 +250,23 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     theme(axis.text.y = element_text(size = 12)) + 
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
   
+  ## Get colorpalette for colorscale or set default
+  if (!is.null(color.vector)){
+    color.pal = color.vector
+  } else {
+    color.pal = brewer.pal(3, "RdBu")
+  }
+  
   if (plot.numbers == T){
     abund8 <- abund7
     abund8$Abundance <- round(abund8$Abundance, 1)
     p <- p + geom_text(data = abund8, size = plot.text.size, colour = "grey10")  
   }
   if (is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, na.value=plot.na, oob = squish, limits = c(min.abundance, max.abundance))
+    p <- p +scale_fill_gradientn(colours = color.pal, trans = plot.colorscale, na.value=plot.na, oob = squish, limits = c(min.abundance, max.abundance))
   }
   if (!is.null(plot.breaks)){
-    p <- p +scale_fill_gradientn(colours = brewer.pal(3, "RdBu"), trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na , oob = squish, limits = c(min.abundance, max.abundance))
+    p <- p +scale_fill_gradientn(colours = color.pal, trans = plot.colorscale, breaks=plot.breaks, na.value=plot.na , oob = squish, limits = c(min.abundance, max.abundance))
   }
   
   
