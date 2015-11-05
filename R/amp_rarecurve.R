@@ -10,6 +10,7 @@
 #' @param xlim vector of x-axis limits.
 #' @param label Label rarefaction curves (default: F).
 #' @param color Color lines by metadata.
+#' @param legend Add a legend to the plot if color is used (default: T)
 #' 
 #' @export
 #' @import phyloseq
@@ -17,7 +18,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rarecurve <- function(data, step = 100, ylim = NULL, xlim = NULL, label = F, color = NULL){
+amp_rarecurve <- function(data, step = 100, ylim = NULL, xlim = NULL, label = F, color = NULL, legend = T){
   
   abund = otu_table(data)@.Data %>% as.data.frame()
   
@@ -42,15 +43,19 @@ if (!is.null(color)) {
 }
   
   if (is.null(ylim) & is.null(xlim)){
-    rarecurve(t(abund), step = step, label = label, col = cols)
+    rarecurve(t(abund), step = step, label = label, col = col_vector)
   }
   if (!is.null(ylim) & !is.null(xlim)){
-    rarecurve(t(abund), step = step, ylim = ylim, xlim = xlim, label = label, col = cols)
+    rarecurve(t(abund), step = step, ylim = ylim, xlim = xlim, label = label, col = col_vector)
   }
   if (!is.null(ylim) & is.null(xlim)){
-    rarecurve(t(abund), step = step, ylim = ylim, label = label, col = cols)
+    rarecurve(t(abund), step = step, ylim = ylim, label = label, col = col_vector)
   }
   if (is.null(ylim) & !is.null(xlim)){
-    rarecurve(t(abund), step = step, xlim = xlim, label = label, col = cols)
+    rarecurve(t(abund), step = step, xlim = xlim, label = label, col = col_vector)
+  }
+  
+  if (!is.null(color) & legend == T){
+    legend("topleft",legend = groups,fill = cols, bty = "n")
   }
 }
