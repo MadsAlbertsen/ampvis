@@ -186,7 +186,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     abund7$Display <- factor(abund7$Display, levels = rev(TotalCounts$Display))
   }
   if (!is.null(order.y)){
-    if (length(order.y) == 1 & order.y != "cluster"){      
+    if ((length(order.y) == 1) && (order.y != "cluster")){       
       temp1 <- filter(abund7, Group == order.y) %>%
         group_by(Display) %>%
         summarise(Mean = mean(Abundance)) %>%
@@ -197,7 +197,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     if (length(order.y) > 1){
       abund7$Display <- factor(abund7$Display, levels = order.y)
     }
-    if (order.y == "cluster"){
+    if ((length(order.y) == 1) && (order.y == "cluster")){
       if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
       tdata <- mutate(abund7, 
                       Abundance = ifelse(Abundance < min.abundance, min.abundance, Abundance),
