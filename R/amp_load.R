@@ -19,6 +19,17 @@
 
 amp_load <- function(otutable, metadata, refseq = NULL, rarefy = NULL){
   otu_counts <- otutable[,1:(ncol(otutable)-7)]
+  
+  # Remove whitespace from the otutable as this will break the structure of the taxonomy
+  trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+  otutable$Kingdom<-trim(as.character(otutable$Kingdom))
+  otutable$Phylum<-trim(as.character(otutable$Phylum))
+  otutable$Class<-trim(as.character(otutable$Class))
+  otutable$Order<-trim(as.character(otutable$Order))
+  otutable$Family<-trim(as.character(otutable$Family))
+  otutable$Genus<-trim(as.character(otutable$Genus))
+  otutable$Species<-trim(as.character(otutable$Species))
+  
   taxonomy <- otutable[,(ncol(otutable)-6):ncol(otutable)] %>% as.matrix()
   rownames(metadata) <- metadata[,1]
   
