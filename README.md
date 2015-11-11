@@ -10,6 +10,13 @@ To cite ampvis please use:
 Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
 
 ## Changelog
+### 1.21.0
+#### Enhancements
+ - New function: `amp_venn` generate venn diagrams of core species.
+ 
+#### Bugfixes
+ - amp_load: Fixed problems with taxonomies that had leading and trailing spaces (@Kirk3gaard).
+
 ### 1.20.0
 #### Enhancements
  - amp_function: Updated MiDAS functional data to the current version. It's now possible to use all the functional data in MiDAS.
@@ -18,7 +25,7 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 ### 1.19.0
 #### Enhancements
  - amp_rarecurve: Now supports a basic legend (@Kirk3gaard).
- - amp_heatmap: Now supports the use of other color scales directly using the `color.vector` option.
+ - amp_heatmap: Now supports the use of other color scales directly using the `color.vector` option (@Kirk3gaard).
  
 #### Bugfixes
  - amp_rarecurve: Colors were messed up. Fixed now.

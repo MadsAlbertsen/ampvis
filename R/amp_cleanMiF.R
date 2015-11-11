@@ -7,7 +7,6 @@
 #' @param data (required) A data frame with MiDAS functions.
 #' 
 #' @export
-#' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
 amp_cleanMiF <- function(data){
