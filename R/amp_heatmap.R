@@ -20,7 +20,7 @@
 #' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
 #' @param plot.colorscale Either "sqrt" or "log10" (default: "log10")
-#' @param plot.na Whether to color missing values with the lowest color in the scale (default: F).
+#' @param plot.na Whether to color missing values with the lowest color in the scale (default: T).
 #' @param plot.text.size The size of the plotted text (default: 4). 
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @param scale.seq The number of sequences in the pre-filtered samples (default: 100)
@@ -41,7 +41,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = F, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL, color.vector = NULL){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = T, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL, color.vector = NULL){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
