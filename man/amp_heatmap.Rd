@@ -25,7 +25,7 @@ amp_heatmap(data)
 
 \item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").}
 
-\item{order.x}{A taxonomy group or vector to order the x-axis by.}
+\item{order.x}{A taxonomy group or vector to order the x-axis by, alternatively "cluster".}
 
 \item{order.y}{A sample or vector to order the y-axis by, alternatively "cluster".}
 

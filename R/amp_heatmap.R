@@ -15,7 +15,7 @@
 #' @param tax.class Converts a specific phyla to class level instead (e.g. "p__Proteobacteria").
 #' @param calc Calculate and display "mean", "max" or "median" across the groups (default: "mean").
 #' @param sort.by Sort the heatmap by a specific value of the "group", e.g. "Treatment A".
-#' @param order.x A taxonomy group or vector to order the x-axis by.
+#' @param order.x A taxonomy group or vector to order the x-axis by, alternatively "cluster".
 #' @param order.y A sample or vector to order the y-axis by, alternatively "cluster".
 #' @param plot.numbers Plot the values on the heatmap (default: T)
 #' @param plot.breaks A vector of breaks for the abundance legend.
@@ -213,7 +213,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   ## Order.x
   if (!is.null(order.x)){
-    if (length(order.x) == 1){
+    if ((length(order.x) == 1) && (order.x != "cluster")){
       temp1 <- filter(abund7, Display == order.x) %>%
         group_by(Group) %>%
         summarise(Mean = mean(Abundance)) %>%
@@ -223,10 +223,22 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
     if (length(order.x) > 1){
       abund7$Group <- factor(abund7$Group, levels = order.x)
     }
+    if ((length(order.x) == 1) && (order.x == "cluster")){
+      if (is.null(max.abundance)){max.abundance <- max(abund7$Abundance)}
+      tdata <- mutate(abund7, 
+                      Abundance = ifelse(Abundance < min.abundance, min.abundance, Abundance),
+                      Abundance = ifelse(Abundance > max.abundance, max.abundance, Abundance))
+      tdata <- dcast(tdata, Display~Group, value.var = "Abundance")
+      rownames(tdata) <- tdata$Display
+      tdata2 <- tdata[,-1]
+      tclust <- hclust(dist(t(tdata2)))
+      tnames <- tclust$labels[tclust$order]
+      abund7$Group <- factor(abund7$Group, levels = tnames) 
+    }
   }
   
   ## Handle NA values
-  if(plot.na == F){ plot.na <- "grey50" }else{ if(!is.null(color.vector)) {plot.na <-color.vector[1]} else {plot.na <-"#EF8A62"}}  
+  if(plot.na == F){ plot.na <- "grey50" }else{ if(!is.null(color.vector)) {plot.na <-color.vector[1]} else {plot.na <-"#67A9CF"}}  
   
   ## Scale to percentages if not normalised and scaled
   
@@ -254,7 +266,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   if (!is.null(color.vector)){
     color.pal = color.vector
   } else {
-    color.pal = brewer.pal(3, "RdBu")
+    color.pal = rev(brewer.pal(3, "RdBu"))
   }
   
   if (plot.numbers == T){

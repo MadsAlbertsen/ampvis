@@ -80,7 +80,7 @@ amp_test_cluster <- function(data, group, method = "bray", plot.label = NULL, pl
   
   if (!is.null(plot.color)){ 
   p1 <- p1 + geom_point(data=hc_d$label, aes(x = x, y = y, color = group), inherit.aes =F, alpha = 0) + 
-    scale_color_manual(labels = rev(levels(hc_d$label$group)), values = rev(unique(hc_d$label$color))) +
+    scale_color_manual(labels = rev(levels(hc_d$label$group)), values = rev(unique(hc_d$label$color)), name = "") +
     guides(colour = guide_legend(override.aes = list(size=3, alpha = 1)))
   }
   

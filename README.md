@@ -10,6 +10,11 @@ To cite ampvis please use:
 Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
 
 ## Changelog
+### 1.22.0
+#### Enhancements
+ - amp_heatmap: `order.x` now supports the input "cluster". Which will do basic hclust on the presented data and arrange it according to the clustering. 
+ - amp_heatmap: Due to popular demand the default color scheme have been reversed! Red now equals abundant!
+ 
 ### 1.21.0
 #### Enhancements
  - New function: `amp_venn` generate venn diagrams of core species.
