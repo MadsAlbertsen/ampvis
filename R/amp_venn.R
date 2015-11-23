@@ -42,7 +42,7 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
     sample <- sample[,c("SeqID", group)]
     colnames(sample)[2] <- "GRP"  
   } else {
-    sample <- data.frame(SegID = sample[,1], GRP = "Core")
+    sample <- data.frame(SeqID = sample[,1], GRP = "Core")
   }
   
   ## Add OTU names to the abundance information
@@ -83,7 +83,7 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
     
     ## Plot  
     p <- ggplot(data.frame(), aes(x=0, y=0)) +
-           annotate("text", x=c(0, 0.4), y = c(0,-0.5), 
+           annotate("text", x=c(0, 0), y = c(0,-0.5), 
                     label = c(paste(AD[1,1], "\n(", AD[1,2],")", sep = ""), 
                             paste("Non-core: ", AD[2,1]," (", AD[2,2],")", sep = "")), 
                     size = text.size) +
@@ -105,9 +105,14 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
     
     ## Generate lists of species in each group
     
-    res <- list(plot = p, 
+    ot <- cbind.data.frame(OTU = rownames(tax),tax, abund) %>%
+           mutate(Shared = "Non-core") %>%
+           mutate(Shared = ifelse(OTU %in% as.character(unique(c_A$OTU)), colnames(a)[2], Shared))
+    
+  res <- list(plot = p, 
                 A = as.character(unique(c_A$OTU)),
-                Noncore = as.character(unique(c_n$OTU)))
+                Noncore = as.character(unique(c_n$OTU)),
+                Otutable = ot)
     
     names(res)[2] <- colnames(a)[2]
     
@@ -133,7 +138,7 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
                      abund = round(c(A = a_A$Sum, AB = a_AB$Sum, B = a_B$Sum, N = a_n$Sum), 1))
     
     p <- ggplot(data.frame(), aes(x=c(-0.2,0.2), y=0)) +
-           annotate("text", x=c(-0.4, 0, 0.4, 0.4), y = c(0,0,0,-0.5), 
+           annotate("text", x=c(-0.4, 0, 0.4, 0), y = c(0,0,0,-0.5), 
                     label = c(paste(AD[1:3,1], "\n(", AD[1:3,2],")", sep = ""), 
                               paste("Non-core: ", AD[4,1]," (", AD[4,2],")", sep = "")), 
                     size = text.size) +
@@ -156,15 +161,22 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
                  legend.key = element_blank(),
                  plot.margin = unit(c(0,0,0,0), "mm"))
     
+    ot <- cbind.data.frame(OTU = rownames(tax),tax, abund) %>%
+      mutate(Shared = "Non-core") %>%
+      mutate(Shared = ifelse(OTU %in% as.character(unique(c_A$OTU)), colnames(a)[2], Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_B$OTU)), colnames(a)[3], Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_AB$OTU)), "Core", Shared))
+    
     res <- list(plot = p, 
                 A = as.character(unique(c_A$OTU)),
                 B = as.character(unique(c_B$OTU)),
-                AB = as.character(unique(c_AB$OTU)),
-                Noncore = as.character(unique(c_n$OTU)))
+                Core = as.character(unique(c_AB$OTU)),
+                Noncore = as.character(unique(c_n$OTU)),
+                Otutable = ot)
     
     names(res)[2:4] <- c(colnames(a)[2],
                          colnames(a)[3], 
-                         paste(colnames(a)[2], colnames(a)[3], sep = "_"))
+                         "Core")
     
   }
   
@@ -229,17 +241,28 @@ amp_venn <- function(data, group = NULL,cut_a = 0.1, cut_f = 80, text.size = 5, 
             legend.key = element_blank(),
             plot.margin = unit(c(0,0,0,0), "mm"))
     
+    ot <- cbind.data.frame(OTU = rownames(tax),tax, abund) %>%
+      mutate(Shared = "Non-core") %>%
+      mutate(Shared = ifelse(OTU %in% as.character(unique(c_ABC$OTU)), "Core", Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_AB$OTU)), paste(colnames(a)[2], colnames(a)[3], sep = "_"), Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_AC$OTU)), paste(colnames(a)[2], colnames(a)[4], sep = "_"), Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_BC$OTU)), paste(colnames(a)[3], colnames(a)[4], sep = "_"), Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_A$OTU)), colnames(a)[2], Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_B$OTU)), colnames(a)[3], Shared),
+             Shared = ifelse(OTU %in% as.character(unique(c_C$OTU)), colnames(a)[4], Shared))
+    
     res <- list(plot = p, 
-                ABC = as.character(unique(c_ABC$OTU)),
+                Core = as.character(unique(c_ABC$OTU)),
                 AB = as.character(unique(c_AB$OTU)),
                 AC = as.character(unique(c_AC$OTU)),
                 BC = as.character(unique(c_BC$OTU)),
                 A = as.character(unique(c_A$OTU)),
                 B = as.character(unique(c_B$OTU)),
                 C = as.character(unique(c_C$OTU)),
-                Noncore = as.character(unique(c_n$OTU)))
+                Noncore = as.character(unique(c_n$OTU)),
+                Otutable = ot)
     
-    names(res)[2:8] <- c(paste(colnames(a)[2], colnames(a)[3], colnames(a)[4], sep = "_"),
+    names(res)[2:8] <- c("Core",
                          paste(colnames(a)[2], colnames(a)[3], sep = "_"),
                          paste(colnames(a)[2], colnames(a)[4], sep = "_"),
                          paste(colnames(a)[3], colnames(a)[4], sep = "_"),
