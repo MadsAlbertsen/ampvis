@@ -39,7 +39,7 @@ if (!is.null(color)) {
     col_vector[i]<-cols[match(group_vector[i],groups)]
   }
 } else {
-  cols="black"
+  col_vector = "black"
 }
   
   if (is.null(ylim) & is.null(xlim)){
