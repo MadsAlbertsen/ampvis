@@ -19,7 +19,11 @@ amp_rarecurve(data)
 
 \item{color}{Color lines by metadata.}
 
-\item{legend}{Add a legend to the plot if color is used (default: T)}
+\item{legend}{Add a legend to the plot if color is used (default: T).}
+
+\item{color.vector}{Vector with colors e.g. c("red","white") (default: NULL).}
+
+\item{legend.position}{Position of the legend (default: "topleft").}
 }
 \description{
 Calculate rarefaction curve for each sample using the vegan rarecurve function directly from a phyloseq object.

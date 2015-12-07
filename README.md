@@ -12,6 +12,12 @@ Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basi
 ## Changelog
 ### 1.23.0
 #### Enhancements
+ - amp_rarecurve: Added support for custom colors and 
+
+
+
+### 1.23.0
+#### Enhancements
  - amp_venn: Now also outputs a simple OTU table with the "core" classification attached.
  - amp_heatmap: Due to popular demand `plot.na` is now TRUE by default (@Kirk3gaard).
  

@@ -35,7 +35,7 @@ amp_heatmap(data)
 
 \item{plot.colorscale}{Either "sqrt" or "log10" (default: "log10")}
 
-\item{plot.na}{Whether to color missing values with the lowest color in the scale (default: F).}
+\item{plot.na}{Whether to color missing values with the lowest color in the scale (default: T).}
 
 \item{scale.seq}{The number of sequences in the pre-filtered samples (default: 100)}
 

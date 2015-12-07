@@ -10,7 +10,9 @@
 #' @param xlim vector of x-axis limits.
 #' @param label Label rarefaction curves (default: F).
 #' @param color Color lines by metadata.
-#' @param legend Add a legend to the plot if color is used (default: T)
+#' @param color.vector Vector with colors e.g. c("red","white") (default: NULL).
+#' @param legend Add a legend to the plot if color is used (default: T).
+#' @param legend.position Position of the legend (default: "topleft").
 #' 
 #' @export
 #' @import phyloseq
@@ -18,7 +20,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_rarecurve <- function(data, step = 100, ylim = NULL, xlim = NULL, label = F, color = NULL, legend = T){
+amp_rarecurve <- function(data, step = 100, ylim = NULL, xlim = NULL, label = F, color = NULL, legend = T, color.vector = NULL, legend.position = "topleft"){
   
   abund = otu_table(data)@.Data %>% as.data.frame()
   
@@ -33,6 +35,7 @@ if (!is.null(color)) {
   groups<-unique(group_vector)
   n = length(groups)
   cols = gg_color_hue(n)
+  if (!is.null(color.vector)){ cols <- color.vector}
   
   col_vector<-rep("black",length(group_vector))
   for (i in 1:length(group_vector)){
@@ -56,6 +59,6 @@ if (!is.null(color)) {
   }
   
   if (!is.null(color) & legend == T){
-    legend("topleft",legend = groups,fill = cols, bty = "n")
+    legend(legend.position,legend = groups,fill = cols, bty = "n")
   }
 }
