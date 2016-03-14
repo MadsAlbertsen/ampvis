@@ -72,6 +72,18 @@ amp_ordinate(data)
 \item{plot.theme}{Choose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
 \item{plot.group.manual}{Manual definition of the plot.group, overrides plot.color.}
+
+\item{plot.label.size}{Text size of the labels (default: 3).}
+
+\item{plot.label.repel}{Repels labels to avoid cluttering (default: F).}
+
+\item{plot.label.seqment.color}{Color segments in when using repel (default = "black).}
+
+\item{plot.nspecies.repel}{Repels labels to avoid cluttering (default: F).}
+
+\item{plot.species.size}{Size of the points (default: 2)}
+
+\item{plot.nspecies.size}{Text size of the labels (default: 4).}
 }
 \value{
 A ggplot2 object

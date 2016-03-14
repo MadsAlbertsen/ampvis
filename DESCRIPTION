@@ -3,8 +3,8 @@ Type: Package
 Title: Tools for visualising amplicon data
 Description: ampvis is a small set of tools that allows effortless
     visualisation of amplicon data
-Version: 1.24.0
-Date: 2015-11-11
+Version: 1.25.0
+Date: 2015-03-14
 Author: Mads Albertsen
 Maintainer: Mads Albertsen <MadsAlbertsen85@gmail.com>
 License: AGPL-3
@@ -12,6 +12,7 @@ URL: http://dx.plos.org/10.1371/journal.pone.0132783
 BugReports: https://github.com/MadsAlbertsen/ampvis/issues
 Depends:
     ggplot2,
+    ggrepel,
     reshape2,
     phyloseq,
     grid,

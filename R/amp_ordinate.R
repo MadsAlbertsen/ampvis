@@ -17,9 +17,15 @@
 #' @param plot.point.size Size of the plotted sample points (default: 3)
 #' @param plot.shape Shape points by a sample variable, e.g "treatment".
 #' @param plot.species Plot loadings as points (default: F)
+#' @param plot.species.size Size of the points (default: 2)
 #' @param plot.nspecies Plot the n most extreme species with their taxonomic classification (default: 0).
+#' @param plot.nspecies.repel Repels labels to avoid cluttering (default: F).
+#' @param plot.nspecies.size Text size of the labels (default: 4).
 #' @param plot.nspecies.tax Taxonomic level used in plot.nspecies (default: "Genus").
 #' @param plot.label Label points using a sample variable.
+#' @param plot.label.size Text size of the labels (default: 3).
+#' @param plot.label.repel Repels labels to avoid cluttering (default: F).
+#' @param plot.label.seqment.color Color segments in when using repel (default = "black).
 #' @param plot.group Uses plot.color and groups samples by either "chull" or "centroid".
 #' @param plot.group.manual Manual definition of the plot.group, overrides plot.color.
 #' @param plot.group.label Add label based on the centroid of the specified group.
@@ -50,7 +56,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, envfit.show = T, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal", plot.group.manual = NULL){
+amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PCA", ncomp = 5, plot.x = "PC1", plot.y = "PC2", plot.color = NULL, plot.color.order = NULL, plot.point.size = 3, plot.shape = NULL, plot.species = F, plot.nspecies = NULL, plot.nspecies.tax = "Genus", plot.label = NULL, plot.group = NULL, plot.group.label = NULL, envfit.factor = NULL, envfit.numeric = NULL, envfit.significant = 0.001, envfit.resize = 1, envfit.color = "darkred", envfit.textsize = 3, envfit.show = T, tax.empty ="best", output = "plot", constrain = NULL, scale.species = F, trajectory = NULL, trajectory.group = trajectory, plot.group.label.size = 4, plot.theme = "normal", plot.group.manual = NULL, plot.label.size = 3, plot.label.repel = F, plot.label.seqment.color = "black", plot.nspecies.repel = F, plot.species.size = 2, plot.nspecies.size = 4){
   
   ## Load the data. If phyloseq object it should be converted to a list of data.frames
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
@@ -207,7 +213,7 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   ### Plot: Add loadings as points
   if(plot.species == T){
-    p <- p + geom_point(data = species, color = "grey", shape = 20)        
+    p <- p + geom_point(data = species, color = "grey", shape = 20, size = plot.species.size)        
   }
   
   ###Plot: Add trajectory based on e.g. data
@@ -264,7 +270,11 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   
   ### Plot: Plot the names of the n most extreme species
   if(!is.null(plot.nspecies)){
-    p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = 4, inherit.aes = F)  
+    if(plot.nspecies.repel == F){
+      p <- p + geom_text(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = plot.nspecies.size, inherit.aes = F)  
+    } else {
+      p <- p + geom_text_repel(data = species[1:plot.nspecies,], aes_string(x = plot.x, y = plot.y, label = plot.nspecies.tax), colour = "black", size = plot.nspecies.size, inherit.aes = F)  
+    }
   }
   
   ### Plot: Environmental factors
@@ -291,7 +301,11 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   ### Plot: Label all samples using sample data
   
   if (!is.null(plot.label)){
-    p <- p + geom_text(aes_string(label=plot.label), size = 3, vjust = 1.5, color = "grey40")
+    if(plot.label.repel == F){
+      p <- p + geom_text(aes_string(label=plot.label), size = plot.label.size, color = "grey40", vjust = 1.5)
+    } else{
+      p <- p + geom_text_repel(aes_string(label=plot.label), size = plot.label.size, color = "grey40", segment.color = plot.label.seqment.color)
+    }
   }  
   
   if(plot.theme == "clean"){

@@ -10,11 +10,17 @@ To cite ampvis please use:
 Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
 
 ## Changelog
+### 1.25.0
+#### Enhancements
+ - amp_ordinate: `plot.label.repel` and `plot.nspecies.repel` adds `ggrepel` functionality to aviod cluttering of points.
+
+### 1.24.0
+#### Enhancements
+ - amp_ordinate: Added support for custom size of labels (`plot.label.size`).
+
 ### 1.23.0
 #### Enhancements
- - amp_rarecurve: Added support for custom colors and 
-
-
+ - amp_rarecurve: Added support for custom colors and placement of legend.
 
 ### 1.23.0
 #### Enhancements
