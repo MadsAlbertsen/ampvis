@@ -50,6 +50,7 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
   abund <- data[["abund"]]  
   tax <- data[["tax"]]
   sample <- data[["sample"]]
+  tax.levels<-tax.show
   
   ## Make a name variable that can be used instead of tax.aggregate to display multiple levels 
   suppressWarnings(
@@ -108,9 +109,9 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     }
     
     ## Subset to a list of level names
-    if (!is.numeric(tax.show)){
-      if (tax.show != "all"){
-        abund7 <- subset(abund5, abund5$Display %in% tax.show)    
+    if (!is.numeric(tax.levels)){
+      if (length(tax.levels) > 1){
+        abund7 <- filter(abund5, Display %in% tax.levels)
       }
       ### Or just show all  
       if (tax.show == "all"){
