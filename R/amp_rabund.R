@@ -94,26 +94,24 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     
     abund5$Display <- factor(abund5$Display, levels = rev(TotalCounts$Display))
     
-    ## Make sure we only show a possible number of taxa
-    if (!is.numeric(tax.show)){
-      tax.show <- nrow(TotalCounts)
-    }
-    
     ## Subset to the x most abundant levels
     if (is.numeric(tax.show)){
+      message(tax.show)
       if (tax.show > nrow(TotalCounts)){  
         tax.show <- nrow(TotalCounts)
       }
       abund7 <- subset(abund5, abund5$Display %in% TotalCounts[1:tax.show,"Display"])  
     }
-    
     ## Subset to a list of level names
     if (!is.numeric(tax.show)){
-      if (tax.show != "all"){
-        abund7 <- subset(abund5, abund5$Display %in% tax.show)    
+      if (length(tax.show) > 1){
+        abund7 <- subset(abund5, as.character(abund5$Display) %in% tax.show)
+      }
+      if ((length(tax.show) == 1) && (tax.show != "all")){
+        abund7 <- subset(abund5, as.character(abund5$Display) %in% tax.show)
       }
       ### Or just show all  
-      if (tax.show == "all"){
+      if ((length(tax.show) == 1) && (tax.show == "all")){
         tax.show <- nrow(TotalCounts)  
         abund7 <- subset(abund5, abund5$Display %in% TotalCounts[1:tax.show,"Display"])  
       }
@@ -130,6 +128,7 @@ amp_rabund <- function(data, group = "Sample", order.group = NULL, tax.show = 50
     ## Order y based on a vector
     if (length(order.y) > 1){
       abund7$Display <- factor(abund7$Display, levels = order.y)
+      abund7 <- subset(abund7, !is.na(Display))
     }
     
     ## plot the data

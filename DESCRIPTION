@@ -3,8 +3,8 @@ Type: Package
 Title: Tools for visualising amplicon data
 Description: ampvis is a small set of tools that allows effortless
     visualisation of amplicon data
-Version: 1.25.0
-Date: 2015-03-14
+Version: 1.26.0
+Date: 2016-09-21
 Author: Mads Albertsen
 Maintainer: Mads Albertsen <MadsAlbertsen85@gmail.com>
 License: AGPL-3
@@ -29,4 +29,4 @@ Depends:
     magrittr,
     gridExtra,
     scales
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1

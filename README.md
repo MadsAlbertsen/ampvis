@@ -10,6 +10,10 @@ To cite ampvis please use:
 Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH, Nielsen PH (2015) Back to Basics – The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. PLoS ONE 10(7): e0132783. doi:10.1371/journal.pone.0132783
 
 ## Changelog
+### 1.26.0
+#### Bugfixes
+ - amp_rabund: `tax.show` did not work with character input.
+
 ### 1.25.0
 #### Enhancements
  - amp_ordinate: `plot.label.repel` and `plot.nspecies.repel` adds `ggrepel` functionality to aviod cluttering of points.
