@@ -32,35 +32,41 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h1>
 
 <p>Install the latest version of <a href="http://www.r-project.org/">R, Rtools</a> and <a href="http://www.rstudio.com/">Rstudio</a>.</p>
 
 <p>A few packages needs to be installed through RStudio before ampvis can be installed. Make sure you run RStudio as <code>Administrator</code> to enable installation of all packages! If you are asked to update packages, then press "a" for all.</p>
 
-<div class="highlight highlight-r"><pre>install.packages(<span class="pl-s"><span class="pl-pds">"</span>devtools<span class="pl-pds">"</span></span>)
+<div class="highlight highlight-source-r"><pre>install.packages(<span class="pl-s"><span class="pl-pds">"</span>devtools<span class="pl-pds">"</span></span>)
 source(<span class="pl-s"><span class="pl-pds">"</span>http://bioconductor.org/biocLite.R<span class="pl-pds">"</span></span>)
 biocLite(<span class="pl-s"><span class="pl-pds">"</span>Biostrings<span class="pl-pds">"</span></span>)
 biocLite(<span class="pl-s"><span class="pl-pds">"</span>DESeq2<span class="pl-pds">"</span></span>)
-biocLite(<span class="pl-s"><span class="pl-pds">"</span>phyloseq<span class="pl-pds">"</span></span>)</pre></div>
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>phyloseq<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>munsell<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>stringi<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>chron<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>permute<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>assertthat<span class="pl-pds">"</span></span>)
+biocLite(<span class="pl-s"><span class="pl-pds">"</span>tibble<span class="pl-pds">"</span></span>)</pre></div>
 
 <p>Ampvis is installed directly from github using the devtools package. </p>
 
-<div class="highlight highlight-r"><pre>library(<span class="pl-s"><span class="pl-pds">"</span>devtools<span class="pl-pds">"</span></span>)
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-s"><span class="pl-pds">"</span>devtools<span class="pl-pds">"</span></span>)
 install_github(<span class="pl-s"><span class="pl-pds">"</span>MadsAlbertsen/ampvis<span class="pl-pds">"</span></span>)</pre></div>
 
 <h3>
-<a id="to-cite-ampvis-in-publications-or-otherwise-credit-please-use" class="anchor" href="#to-cite-ampvis-in-publications-or-otherwise-credit-please-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>To cite ampvis in publications, or otherwise credit, please use:</h3>
+<a id="to-cite-ampvis-in-publications-or-otherwise-credit-please-use" class="anchor" href="#to-cite-ampvis-in-publications-or-otherwise-credit-please-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>To cite ampvis in publications, or otherwise credit, please use:</h3>
 
 <p>Albertsen M, Karst SM, Ziegler AS, Kirkegaard RH and Nielsen PH. (2015) Back to Basics - The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. <a href="http://dx.plos.org/10.1371/journal.pone.0132783">PLoS ONE 10(7):e0132783</a>.</p>
 
 <h1>
-<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples</h1>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples</h1>
 
 <p>First time users of <code>ampvis</code> should start with the <a href="http://madsalbertsen.github.io/ampvis/examples/ampvis_guide.html">basic guide</a>. The associated Rmarkdown file can be downloaded <a href="https://raw.githubusercontent.com/MadsAlbertsen/ampvis/gh-pages/examples/ampvis_guide.Rmd">here</a>.</p>
 
 <h1>
-<a id="papers-using-ampvis" class="anchor" href="#papers-using-ampvis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Papers using ampvis</h1>
+<a id="papers-using-ampvis" class="anchor" href="#papers-using-ampvis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Papers using ampvis</h1>
 
 <p><strong>Albertsen M</strong>, Karst SM, Ziegler AS, Kirkegaard RH and Nielsen PH. (2015) Back to Basics - The Influence of DNA Extraction and Primer Choice on Phylogenetic Analysis of Activated Sludge Communities. <a href="http://dx.plos.org/10.1371/journal.pone.0132783">PLoS ONE 10(7):e0132783</a>.</p>
 
