@@ -223,7 +223,8 @@ amp_ordinate <- function(data, scale = NULL, trans = "sqrt", ordinate.type = "PC
   }
   
   ### Plot: Add samples as points
-  p <- p + geom_point(size = plot.point.size)
+  temp<-names(sample)[1]
+  p <- p + geom_point(aes_string(text = paste(eval(temp))),size = plot.point.size)
   
   ### Plot: If PCA add explained variance to the axis
   if(ordinate.type == "PCA"){
