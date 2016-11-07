@@ -54,6 +54,8 @@ amp_heatmap(data)
 \item{sort.by}{Sort the heatmap by a specific value of the "group", e.g. "Treatment A".}
 
 \item{color.vector}{Vector with colors for colorscale e.g. c("red","white") (default: NULL)}
+
+\item{round}{Number of digits to plot (default: 1)}
 }
 \value{
 A ggplot2 object or a list with the ggplot2 object and associated dataframes.

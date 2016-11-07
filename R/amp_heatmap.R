@@ -28,6 +28,7 @@
 #' @param max.abundance All values above are given the same color.
 #' @param output To output a plot or the complete data inclusive dataframes (default: "plot")
 #' @param color.vector Vector with colors for colorscale e.g. c("red","white") (default: NULL)
+#' @param round Number of digits to plot (default: 1)
 #' 
 #' @return A ggplot2 object or a list with the ggplot2 object and associated dataframes.
 #' 
@@ -41,7 +42,7 @@
 #' 
 #' @author Mads Albertsen \email{MadsAlbertsen85@@gmail.com}
 
-amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = T, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL, color.vector = NULL){
+amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, tax.aggregate = "Phylum", tax.add = NULL, tax.show = 10, tax.class = NULL, tax.empty = "best", order.x = NULL, order.y = NULL, plot.numbers = T, plot.breaks = NULL, plot.colorscale = "log10", plot.na = T, scale.seq = 100, output = "plot",plot.text.size = 4, plot.theme = "normal", calc = "mean", min.abundance = 0.1, max.abundance = NULL, sort.by = NULL, color.vector = NULL, round = 1){
   
   data <- list(abund = as.data.frame(otu_table(data)@.Data),
                tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -271,7 +272,7 @@ amp_heatmap <- function(data, group = "Sample", normalise = NULL, scale = NULL, 
   
   if (plot.numbers == T){
     abund8 <- abund7
-    abund8$Abundance <- round(abund8$Abundance, 1)
+    abund8$Abundance <- round(abund8$Abundance, round)
     p <- p + geom_text(data = abund8, size = plot.text.size, colour = "grey10")  
   }
   if (is.null(plot.breaks)){
